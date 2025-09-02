@@ -1,8 +1,82 @@
 # GraphHopper Moped Routing Server
 
-This project provides a Dockerized configuration for a GraphHopper routing engine customized for mopeds. It uses a custom routing profile to adjust speeds and road priorities based on a set of rules defined in `moped-rules.json`.
+This project provides a Dockerized configuration for a GraphHopper routing engine customized for mopeds, along with web and future Android client applications. It uses a custom routing profile to adjust speeds and road priorities based on a set of rules defined in `moped-rules.json`.
+
+## Project Structure
+
+```
+moped-router/
+├── config.yml              # GraphHopper server configuration
+├── docker-compose.yml      # Docker compose setup
+├── moped-rules.json        # Custom routing rules for mopeds
+├── web/                    # Web application for testing
+│   ├── index.html
+│   ├── script.js
+│   └── style.css
+├── android/                # Future Android application
+│   └── app/src/main/java/com/moped/router/
+├── tests/                  # Test suite
+├── docs/                   # Documentation
+└── package.json           # Node.js dependencies and scripts
+```
+
+## Features
+
+### Web Application
+- Interactive map interface using Leaflet
+- Route planning with start/end points
+- Preset route selection
+- API status monitoring
+- Real-time route visualization
+- Distance and time calculations
+
+### GraphHopper Backend
+- Customized for moped routing (45 km/h max speed)
+- Reduced priority for motorways and trunk roads
+- Netherlands map data support
+- Docker containerized deployment
+
+## Development
+
+### Web Application Development
+
+1. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Run Development Server:**
+   ```bash
+   npm run dev
+   ```
+   This starts a local web server at `http://localhost:3000`
+
+3. **Run Tests:**
+   ```bash
+   npm test
+   ```
+
+4. **Lint Code:**
+   ```bash
+   npm run lint
+   ```
+
+### Testing the Web Application
+
+The web application includes several features for testing the moped routing:
+
+- **Preset Routes**: Quick selection of common routes in the Netherlands
+- **API Status Monitoring**: Real-time check of GraphHopper API availability  
+- **Route Visualization**: Interactive map display of calculated routes
+- **Error Handling**: Clear feedback for API failures or invalid inputs
+
+### Future Android Development
+
+See [Android Development Plan](docs/android-development-plan.md) for detailed information about the planned Android application.
 
 ## Prerequisites
+
+**For GraphHopper Server:**
 
 -   [Docker](https://docs.docker.com/get-docker/)
 -   [Docker Compose](https://docs.docker.com/compose/install/)

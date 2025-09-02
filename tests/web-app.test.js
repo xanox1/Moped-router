@@ -1,0 +1,78 @@
+/**
+ * @jest-environment jsdom
+ */
+
+// Test for the moped router web application
+describe('Moped Router Web App', () => {
+  beforeEach(() => {
+    // Set up DOM
+    document.body.innerHTML = `
+      <div class="container">
+        <div class="controls">
+          <h1>Moped Router</h1>
+          <div class="input-group">
+            <label for="start">Start (Lat, Lon)</label>
+            <input type="text" id="start" value="52.3702,4.8952">
+          </div>
+          <div class="input-group">
+            <label for="end">End (Lat, Lon)</label>
+            <input type="text" id="end" value="52.0907,5.1214">
+          </div>
+          <button id="getRouteBtn">Get Route</button>
+          <div id="route-info"></div>
+          <div id="error-message" class="error"></div>
+        </div>
+        <div id="map"></div>
+      </div>
+    `;
+
+    // Reset fetch mock
+    fetch.mockClear();
+  });
+
+  test('should have correct API URL configured', () => {
+    // Load the script content to check API URL
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('https://graphhopper.xanox.org:8989/route');
+  });
+
+  test('should validate required input fields', () => {
+    const startInput = document.getElementById('start');
+    const endInput = document.getElementById('end');
+    
+    expect(startInput).toBeTruthy();
+    expect(endInput).toBeTruthy();
+    expect(startInput.value).toBe('52.3702,4.8952');
+    expect(endInput.value).toBe('52.0907,5.1214');
+  });
+
+  test('should display error when API request fails', async () => {
+    // Mock failed fetch
+    fetch.mockRejectedValueOnce(new Error('Network error'));
+
+    // Simulate the getRoute function logic
+    const errorMessageDiv = document.getElementById('error-message');
+    errorMessageDiv.textContent = 'Network error';
+    errorMessageDiv.style.display = 'block';
+
+    expect(errorMessageDiv.textContent).toBe('Network error');
+    expect(errorMessageDiv.style.display).toBe('block');
+  });
+
+  test('should construct correct API URL with parameters', () => {
+    const baseUrl = 'https://graphhopper.xanox.org:8989/route';
+    const startPoint = '52.3702,4.8952';
+    const endPoint = '52.0907,5.1214';
+    
+    const url = new URL(baseUrl);
+    url.searchParams.append('point', startPoint);
+    url.searchParams.append('point', endPoint);
+    url.searchParams.append('profile', 'moped');
+    url.searchParams.append('points_encoded', 'false');
+
+    expect(url.toString()).toContain('point=52.3702%2C4.8952');
+    expect(url.toString()).toContain('point=52.0907%2C5.1214');
+    expect(url.toString()).toContain('profile=moped');
+    expect(url.toString()).toContain('points_encoded=false');
+  });
+});

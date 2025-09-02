@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Configuration ---
-    const GRAPHHOPPER_API_URL = 'http://10.0.30.102:8989/route';
+    const GRAPHHOPPER_API_URL = 'https://graphhopper.xanox.org:8989/route';
     const MAP_CENTER = [52.2, 5.5]; // Center of the Netherlands
     const MAP_ZOOM = 8;
     const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const startInput = document.getElementById('start');
     const endInput = document.getElementById('end');
     const getRouteBtn = document.getElementById('getRouteBtn');
+    const clearRouteBtn = document.getElementById('clearRouteBtn');
+    const testApiBtn = document.getElementById('testApiBtn');
+    const presetRoutes = document.getElementById('presetRoutes');
+    const apiStatusIndicator = document.getElementById('api-status-indicator');
     const routeInfoDiv = document.getElementById('route-info');
     const errorMessageDiv = document.getElementById('error-message');
 
@@ -18,6 +22,25 @@ document.addEventListener('DOMContentLoaded', () => {
     L.tileLayer(TILE_URL, { attribution: MAP_ATTRIBUTION }).addTo(map);
 
     let routeLayer = L.layerGroup().addTo(map);
+
+    // --- Preset Routes Data ---
+    const presetRoutesData = {
+        'amsterdam-utrecht': {
+            start: '52.3702,4.8952',
+            end: '52.0907,5.1214',
+            name: 'Amsterdam to Utrecht'
+        },
+        'amsterdam-haarlem': {
+            start: '52.3702,4.8952', 
+            end: '52.3874,4.6462',
+            name: 'Amsterdam to Haarlem'
+        },
+        'utrecht-arnhem': {
+            start: '52.0907,5.1214',
+            end: '51.9851,5.8987',
+            name: 'Utrecht to Arnhem'
+        }
+    };
 
     // --- Functions ---
     const getRoute = async () => {
@@ -30,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessageDiv.style.display = 'none';
 
         if (!startPoint || !endPoint) {
-            showError("Start and End points are required.");
+            showError('Start and End points are required.');
             return;
         }
 
@@ -45,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (!response.ok || !data.paths || data.paths.length === 0) {
-                const message = data.message || "Could not find a route.";
+                const message = data.message || 'Could not find a route.';
                 throw new Error(message);
             }
 
@@ -87,8 +110,72 @@ document.addEventListener('DOMContentLoaded', () => {
     const showError = (message) => {
         errorMessageDiv.textContent = message;
         errorMessageDiv.style.display = 'block';
-    }
+    };
+
+    const clearRoute = () => {
+        routeLayer.clearLayers();
+        routeInfoDiv.innerHTML = '';
+        errorMessageDiv.style.display = 'none';
+    };
+
+    const setApiStatus = (status) => {
+        apiStatusIndicator.className = `status-indicator ${status}`;
+        switch(status) {
+        case 'online':
+            apiStatusIndicator.textContent = 'Online';
+            break;
+        case 'offline':
+            apiStatusIndicator.textContent = 'Offline';
+            break;
+        default:
+            apiStatusIndicator.textContent = 'Unknown';
+        }
+    };
+
+    const testApiConnection = async () => {
+        testApiBtn.disabled = true;
+        testApiBtn.textContent = 'Testing...';
+        
+        try {
+            const testUrl = new URL(GRAPHHOPPER_API_URL.replace('/route', '/info'));
+            const response = await fetch(testUrl, { 
+                method: 'GET',
+                mode: 'cors'
+            });
+            
+            if (response.ok) {
+                setApiStatus('online');
+                showError('');
+                errorMessageDiv.style.display = 'none';
+            } else {
+                setApiStatus('offline');
+                showError(`API returned status: ${response.status}`);
+            }
+        } catch (error) {
+            setApiStatus('offline');
+            showError(`API connection failed: ${error.message}`);
+        } finally {
+            testApiBtn.disabled = false;
+            testApiBtn.textContent = 'Test API';
+        }
+    };
+
+    const loadPresetRoute = () => {
+        const selectedRoute = presetRoutes.value;
+        if (selectedRoute && presetRoutesData[selectedRoute]) {
+            const route = presetRoutesData[selectedRoute];
+            startInput.value = route.start;
+            endInput.value = route.end;
+            clearRoute();
+        }
+    };
 
     // --- Event Listeners ---
     getRouteBtn.addEventListener('click', getRoute);
+    clearRouteBtn.addEventListener('click', clearRoute);
+    testApiBtn.addEventListener('click', testApiConnection);
+    presetRoutes.addEventListener('change', loadPresetRoute);
+
+    // Test API connection on page load
+    testApiConnection();
 });

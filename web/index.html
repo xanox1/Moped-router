@@ -23,7 +23,26 @@
                 <label for="end">End (Lat, Lon)</label>
                 <input type="text" id="end" value="52.0907,5.1214">
             </div>
+            
+            <div class="preset-routes">
+                <label>Preset Routes:</label>
+                <select id="presetRoutes">
+                    <option value="">Select a preset route...</option>
+                    <option value="amsterdam-utrecht">Amsterdam to Utrecht</option>
+                    <option value="amsterdam-haarlem">Amsterdam to Haarlem</option>
+                    <option value="utrecht-arnhem">Utrecht to Arnhem</option>
+                </select>
+            </div>
+
             <button id="getRouteBtn">Get Route</button>
+            <button id="clearRouteBtn">Clear Route</button>
+            
+            <div class="api-status">
+                <label>API Status:</label>
+                <span id="api-status-indicator" class="status-indicator unknown">Unknown</span>
+                <button id="testApiBtn">Test API</button>
+            </div>
+
             <div id="route-info"></div>
             <div id="error-message" class="error"></div>
         </div>
