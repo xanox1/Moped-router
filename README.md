@@ -74,6 +74,42 @@ The web application includes several features for testing the moped routing:
 
 See [Android Development Plan](docs/android-development-plan.md) for detailed information about the planned Android application.
 
+## GitHub Actions & Deployment
+
+This repository includes automated testing and deployment via GitHub Actions:
+
+### Automated Testing
+
+Every push and pull request automatically runs:
+- **Node.js Testing**: Tests on Node.js 18.x and 20.x
+- **Linting**: Code quality checks with ESLint
+- **Build Verification**: Ensures the web application builds correctly
+
+The CI workflow is triggered on pushes to `main` and `develop` branches and on all pull requests.
+
+### Live Demo via GitHub Pages
+
+The web application is automatically deployed to GitHub Pages on every push to the `main` branch:
+
+- **Live Demo**: Available at `https://[username].github.io/Moped-router/`
+- **Automatic Updates**: Deploys latest version from main branch
+- **Build Process**: Runs tests before deployment to ensure quality
+
+To enable GitHub Pages deployment:
+1. Go to repository Settings → Pages
+2. Select "GitHub Actions" as the source
+3. The deployment workflow will automatically deploy on the next push to main
+
+### Testing in GitHub
+
+To test this application in GitHub:
+
+1. **Fork the repository** to your GitHub account
+2. **Enable GitHub Actions** in your fork (if not already enabled)
+3. **Push changes** to trigger automated testing
+4. **Enable GitHub Pages** to get a live demo of the web application
+5. **Check the Actions tab** to see test results and deployment status
+
 ## Prerequisites
 
 **For GraphHopper Server:**
