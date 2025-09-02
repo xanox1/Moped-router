@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  graphhopper:
+    image: israelhikingmap/graphhopper
+    container_name: graphhopper-moped-engine
+    ports:
+      - "8989:8989"
+    volumes:
+      # These paths assume your data and cache directories are on the host
+      # at /srv/graphhopper-moped-server/
+      - /srv/graphhopper-moped-server/data:/data:z
+      - /srv/graphhopper-moped-server/graph-cache:/graph-cache:z
+      # This mounts your local config directory into the container
+      - ./config:/config:z
+    environment:
+      - JAVA_OPTS=-Xmx4g -Xms4g
+    command: ["--config", "/config/config.yml"]

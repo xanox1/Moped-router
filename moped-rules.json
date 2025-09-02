@@ -1,0 +1,14 @@
+{
+  "speed": [
+    {
+      "if": "true",
+      "limit_to": "45"
+    }
+  ],
+  "priority": [
+    {
+      "if": "road_class == MOTORWAY || road_class == TRUNK",
+      "multiply_by": "0.1"
+    }
+  ]
+}
