@@ -15,5 +15,12 @@ graphhopper:
       custom_model_files:
         - moped-rules.json
 
-  server:
-    custom_models.enabled: true
+# Corrected YAML keys from camelCase to snake_case to match Dropwizard's expectations.
+server:
+  type: default
+  application_connectors:
+    - type: http
+      port: 8989
+  admin_connectors:
+    - type: http
+      port: 8990
