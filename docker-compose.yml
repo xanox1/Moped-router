@@ -4,14 +4,16 @@ services:
     image: israelhikingmap/graphhopper
     container_name: graphhopper-moped-engine
     ports:
+      # Map the application port
       - "8989:8989"
+      # It's good practice to also map the admin port for debugging
+      - "8990:8990"
     volumes:
-      # These paths assume your data and cache directories are on the host
-      # at /srv/graphhopper-moped-server/
       - /srv/graphhopper-moped-server/data:/data:z
       - /srv/graphhopper-moped-server/graph-cache:/graph-cache:z
-      # This mounts your local config directory into the container
-      - ./config:/config:z
+      - /srv/graphhopper-moped-server/config:/config:z
     environment:
+      # JAVA_OPTS is now only needed for memory settings.
+      # The port is handled by config.yml.
       - JAVA_OPTS=-Xmx4g -Xms4g
     command: ["--config", "/config/config.yml"]
