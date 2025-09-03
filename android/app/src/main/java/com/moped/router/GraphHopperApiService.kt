@@ -2,7 +2,7 @@ package com.moped.router.data.remote
 
 /**
  * API service interface for GraphHopper routing
- * Base URL: https://graphhopper.xanox.org:8989
+ * Base URL: https://graphhopper.xanox.org/
  */
 interface GraphHopperApiService {
     

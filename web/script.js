@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Configuration ---
-    const GRAPHHOPPER_API_URL = 'https://graphhopper.xanox.org:8989/route';
+    const GRAPHHOPPER_API_URL = 'https://graphhopper.xanox.org/route';
     const MAP_CENTER = [52.2, 5.5]; // Center of the Netherlands
     const MAP_ZOOM = 8;
     const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';

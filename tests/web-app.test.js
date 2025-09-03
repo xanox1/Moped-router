@@ -33,7 +33,7 @@ describe('Moped Router Web App', () => {
   test('should have correct API URL configured', () => {
     // Load the script content to check API URL
     const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
-    expect(scriptContent).toContain('https://graphhopper.xanox.org:8989/route');
+    expect(scriptContent).toContain('https://graphhopper.xanox.org/route');
   });
 
   test('should validate required input fields', () => {
@@ -60,7 +60,7 @@ describe('Moped Router Web App', () => {
   });
 
   test('should construct correct API URL with parameters', () => {
-    const baseUrl = 'https://graphhopper.xanox.org:8989/route';
+    const baseUrl = 'https://graphhopper.xanox.org/route';
     const startPoint = '52.3702,4.8952';
     const endPoint = '52.0907,5.1214';
     
