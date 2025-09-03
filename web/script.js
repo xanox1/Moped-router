@@ -17,11 +17,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const routeInfoDiv = document.getElementById('route-info');
     const errorMessageDiv = document.getElementById('error-message');
 
-    // --- Map Initialization ---
-    const map = L.map('map').setView(MAP_CENTER, MAP_ZOOM);
-    L.tileLayer(TILE_URL, { attribution: MAP_ATTRIBUTION }).addTo(map);
-
-    let routeLayer = L.layerGroup().addTo(map);
+    // Check if Leaflet is available before initializing map
+    let map, routeLayer;
+    if (typeof L !== 'undefined') {
+        // --- Map Initialization ---
+        map = L.map('map').setView(MAP_CENTER, MAP_ZOOM);
+        L.tileLayer(TILE_URL, { attribution: MAP_ATTRIBUTION }).addTo(map);
+        routeLayer = L.layerGroup().addTo(map);
+    } else {
+        console.warn('Leaflet not available - map functionality disabled');
+    }
 
     // --- Map Click State ---
     let activeInputField = null; // Track which input field is active for map clicking
@@ -69,7 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const endPoint = endInput.value;
 
         // Clear previous state
-        routeLayer.clearLayers();
+        if (routeLayer) {
+            routeLayer.clearLayers();
+        }
         routeInfoDiv.innerHTML = '';
         errorMessageDiv.style.display = 'none';
 
@@ -115,6 +122,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const drawRoute = (coordinates) => {
+        if (typeof L === 'undefined' || !routeLayer) {
+            console.warn('Map not available - route drawing disabled');
+            return;
+        }
+        
         // GeoJSON coordinates are [lon, lat], Leaflet needs [lat, lon]
         const latLngs = coordinates.map(coord => [coord[1], coord[0]]);
 
@@ -145,7 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const clearRoute = () => {
-        routeLayer.clearLayers();
+        if (routeLayer) {
+            routeLayer.clearLayers();
+        }
         routeInfoDiv.innerHTML = '';
         errorMessageDiv.style.display = 'none';
     };
@@ -343,6 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // Query nearby features using Overpass API for more detailed information
+            let overpassData = null;
             try {
                 const overpassQuery = `
                     [out:json][timeout:10];
@@ -366,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 if (overpassResponse.ok) {
-                    const overpassData = await overpassResponse.json();
+                    overpassData = await overpassResponse.json();
                     
                     if (overpassData.elements && overpassData.elements.length > 0) {
                         // Group features by type
@@ -450,32 +465,90 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn('Overpass API query failed:', overpassError);
             }
             
-            // Add routing information
+            // Add moped accessibility information based on road classification
             try {
-                const routingUrl = new URL('https://graphhopper.xanox.org/route');
-                routingUrl.searchParams.append('point', `${lat},${lng}`);
-                routingUrl.searchParams.append('point', `${lat + 0.001},${lng + 0.001}`);
-                routingUrl.searchParams.append('profile', 'moped');
-                routingUrl.searchParams.append('debug', 'true');
-                routingUrl.searchParams.append('points_encoded', 'false');
-                
-                const routingResponse = await fetch(routingUrl);
-                const routingData = await routingResponse.json();
-                
                 info += '**Moped Routing Information:**\n';
-                if (routingData.paths && routingData.paths.length > 0) {
-                    info += '• Road accessible for moped routing\n';
-                    info += '• Maximum speed: 45 km/h\n';
-                    
-                    if (routingData.info) {
-                        info += `• Routing engine: ${routingData.info.build_date || 'GraphHopper'}\n`;
-                    }
-                } else {
-                    info += '• No moped routing available at this location\n';
+                
+                // Check road classification from nearby roads
+                let roadTypes = [];
+                
+                // First, check if we found any roads in the Overpass query
+                if (overpassData && overpassData.elements) {
+                    overpassData.elements.forEach(element => {
+                        if (element.tags && element.tags.highway) {
+                            roadTypes.push(element.tags.highway);
+                        }
+                    });
                 }
+                
+                // If no roads found in Overpass, make a specific query for roads at this location
+                if (roadTypes.length === 0) {
+                    try {
+                        const roadQuery = `
+                            [out:json][timeout:5];
+                            (
+                                way(around:20,${lat},${lng})[highway];
+                            );
+                            out tags;
+                        `;
+                        
+                        const roadResponse = await fetch('https://overpass-api.de/api/interpreter', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `data=${encodeURIComponent(roadQuery)}`
+                        });
+                        
+                        if (roadResponse.ok) {
+                            const roadData = await roadResponse.json();
+                            if (roadData.elements) {
+                                roadData.elements.forEach(element => {
+                                    if (element.tags && element.tags.highway) {
+                                        roadTypes.push(element.tags.highway);
+                                    }
+                                });
+                            }
+                        }
+                    } catch (roadQueryError) {
+                        console.warn('Road query failed:', roadQueryError);
+                    }
+                }
+                
+                // Analyze road types for moped accessibility
+                const hasMotorway = roadTypes.some(type => type === 'motorway' || type === 'motorway_link');
+                const hasTrunk = roadTypes.some(type => type === 'trunk' || type === 'trunk_link');
+                const hasPrimary = roadTypes.some(type => type === 'primary' || type === 'primary_link');
+                const hasAccessibleRoads = roadTypes.some(type => 
+                    !['motorway', 'motorway_link', 'trunk', 'trunk_link', 'primary', 'primary_link'].includes(type) &&
+                    ['secondary', 'tertiary', 'unclassified', 'residential', 'service', 'cycleway', 'path'].includes(type)
+                );
+                
+                if (hasPrimary) {
+                    info += '• ⛔ Not accessible for moped routing (Primary road/N-road)\n';
+                    info += '• Primary roads (N-roads) are blocked for moped traffic\n';
+                } else if (hasMotorway) {
+                    info += '• ⚠️ Not accessible for moped routing (Motorway)\n';
+                    info += '• Motorways are not allowed for moped traffic\n';
+                } else if (hasTrunk) {
+                    info += '• ⚠️ Limited access for moped routing (Trunk road)\n';
+                    info += '• Trunk roads have reduced priority for mopeds\n';
+                } else if (hasAccessibleRoads) {
+                    info += '• ✅ Accessible for moped routing\n';
+                    info += '• Maximum speed: 45 km/h\n';
+                } else if (roadTypes.length > 0) {
+                    info += '• ❓ Limited information about moped accessibility\n';
+                    info += '• Road type: ' + roadTypes.join(', ') + '\n';
+                } else {
+                    info += '• ❓ No road information available at this location\n';
+                    info += '• May not be suitable for vehicle routing\n';
+                }
+                
+                info += '• Routing engine: GraphHopper with moped profile\n';
+                
             } catch (routingError) {
                 info += '**Moped Routing Information:**\n';
-                info += '• Routing service temporarily unavailable\n';
+                info += '• Routing information temporarily unavailable\n';
             }
             
             return info;
@@ -486,6 +559,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Make queryFeatures globally accessible for testing
+    window.queryFeatures = queryFeatures;
+
     // --- Feature Modal Functions ---
     const featureModal = document.getElementById('feature-modal');
     const featureModalBody = document.getElementById('feature-modal-body');
@@ -493,6 +569,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const showFeatureModal = (content) => {
         featureModalBody.textContent = content;
+        featureModal.style.display = 'flex';
+    };
+    
+    const showFeatureModalLoading = () => {
+        featureModalBody.textContent = 'Loading feature information...';
         featureModal.style.display = 'flex';
     };
     
@@ -533,6 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
         case 'query-features':
             try {
                 hideContextMenu(); // Hide context menu before showing modal
+                showFeatureModalLoading(); // Show loading state
                 const features = await queryFeatures(lat, lng);
                 showFeatureModal(features);
             } catch (error) {
@@ -548,10 +630,12 @@ document.addEventListener('DOMContentLoaded', () => {
     testApiBtn.addEventListener('click', testApiConnection);
     
     // Map click event for setting coordinates
-    map.on('click', handleMapClick);
-    
-    // Map right-click event for context menu
-    map.on('contextmenu', showContextMenu);
+    if (map) {
+        map.on('click', handleMapClick);
+        
+        // Map right-click event for context menu
+        map.on('contextmenu', showContextMenu);
+    }
     
     // Input field click events for map clicking mode
     startInput.addEventListener('click', () => handleFieldClick(startInput));
