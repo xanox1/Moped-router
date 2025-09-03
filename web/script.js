@@ -68,6 +68,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Dutch traffic sign descriptions for moped routing
+    const getTrafficSignDescription = (signType) => {
+        const signDescriptions = {
+            'NL:C1': 'Gesloten voor alle verkeer (Closed for all traffic)',
+            'NL:C2': 'Gesloten voor motorvoertuigen (Closed for motor vehicles)',
+            'NL:C5': 'Gesloten voor bromfietsen (Closed for mopeds)',
+            'NL:C7': 'Gesloten voor alle voertuigen (Closed for all vehicles)',
+            'NL:C12': 'Verboden voor motorvoertuigen (Prohibited for motor vehicles)',
+            'NL:C16': 'Gesloten voor voertuigen met aanhangwagen (Closed for vehicles with trailer)',
+            'NL:G11': 'Fietspad (Cycle path)',
+            'NL:G12a': 'Fiets/bromfietspad (Cycle/moped path)',
+            'NL:G13': 'Bromfietspad (Moped path)',
+            'NL:A1': 'Maximum snelheid (Speed limit)',
+            'NL:A4': 'Begin zone maximum snelheid (Speed zone start)',
+            'NL:A5': 'Einde zone maximum snelheid (Speed zone end)'
+        };
+        
+        // Handle speed limit signs with specific values
+        if (signType.startsWith('NL:A1-') || signType.includes('[')) {
+            const match = signType.match(/(\d+)/);
+            if (match) {
+                return `Maximum snelheid ${match[1]} km/h (Speed limit ${match[1]} km/h)`;
+            }
+        }
+        
+        if (signType.startsWith('NL:A4-')) {
+            const match = signType.match(/(\d+)/);
+            if (match) {
+                return `Begin zone ${match[1]} km/h (Speed zone ${match[1]} km/h start)`;
+            }
+        }
+        
+        return signDescriptions[signType] || `Dutch traffic sign: ${signType}`;
+    };
+
+    const isMopedRelevantSign = (signType) => {
+        const mopedRelevantSigns = [
+            'NL:C5',  // Mopeds prohibited
+            'NL:C2',  // Motor vehicles prohibited (includes mopeds)
+            'NL:C7',  // All vehicles prohibited
+            'NL:C1',  // All traffic prohibited
+            'NL:C12', // Motor vehicles prohibited
+            'NL:G12a', // Moped/cycle path
+            'NL:G13'  // Moped path
+        ];
+        
+        return mopedRelevantSigns.some(sign => signType.includes(sign)) || 
+               signType.includes('A1') || // Speed limits
+               signType.includes('A4') || // Speed zones
+               signType.includes('A5');
+    };
+
     // --- Functions ---
     const getRoute = async () => {
         const startPoint = startInput.value;
@@ -138,28 +190,56 @@ document.addEventListener('DOMContentLoaded', () => {
             url.searchParams.append('custom_model.distance_influence[4].if', 'max_speed > 45');
             url.searchParams.append('custom_model.distance_influence[4].multiply_by', '1000');
             
+            // Block roads with zone speed limit > 45 km/h
+            url.searchParams.append('custom_model.priority[5].if', 'zone_maxspeed > 45');
+            url.searchParams.append('custom_model.priority[5].multiply_by', '0');
+            url.searchParams.append('custom_model.distance_influence[5].if', 'zone_maxspeed > 45');
+            url.searchParams.append('custom_model.distance_influence[5].multiply_by', '1000');
+            
+            // Block roads with Dutch traffic signs prohibiting mopeds
+            const dutchProhibitionSigns = ['NL:C5', 'NL:C2', 'NL:C7', 'NL:C1', 'NL:C12'];
+            dutchProhibitionSigns.forEach((sign, index) => {
+                const paramIndex = 6 + index;
+                url.searchParams.append(`custom_model.priority[${paramIndex}].if`, `traffic_sign == '${sign}'`);
+                url.searchParams.append(`custom_model.priority[${paramIndex}].multiply_by`, '0');
+                url.searchParams.append(`custom_model.distance_influence[${paramIndex}].if`, `traffic_sign == '${sign}'`);
+                url.searchParams.append(`custom_model.distance_influence[${paramIndex}].multiply_by`, '1000');
+            });
+            
+            // Prefer moped-designated infrastructure
+            url.searchParams.append('custom_model.priority[11].if', 'cycleway_moped == designated || traffic_sign == \'NL:G12a\'');
+            url.searchParams.append('custom_model.priority[11].multiply_by', '1.5');
+            url.searchParams.append('custom_model.distance_influence[11].if', 'cycleway_moped == designated || traffic_sign == \'NL:G12a\'');
+            url.searchParams.append('custom_model.distance_influence[11].multiply_by', '0.8');
+            
+            // Prefer cycleway with moped access
+            url.searchParams.append('custom_model.priority[12].if', 'cycleway_moped == yes');
+            url.searchParams.append('custom_model.priority[12].multiply_by', '1.2');
+            url.searchParams.append('custom_model.distance_influence[12].if', 'cycleway_moped == yes');
+            url.searchParams.append('custom_model.distance_influence[12].multiply_by', '0.9');
+            
             // Configure routing algorithm based on route type
             if (routeType === 'shortest') {
                 // For shortest route, maximize distance influence to prioritize shortest path
                 url.searchParams.append('algorithm', 'astar');
-                url.searchParams.append('custom_model.distance_influence[5].if', 'true');
-                url.searchParams.append('custom_model.distance_influence[5].multiply_by', '2.0');
+                url.searchParams.append('custom_model.distance_influence[13].if', 'true');
+                url.searchParams.append('custom_model.distance_influence[13].multiply_by', '2.0');
             } else if (routeType === 'fastest') {
                 // For fastest route, prioritize faster roads and reduce distance penalties
                 url.searchParams.append('algorithm', 'dijkstra');
-                url.searchParams.append('custom_model.priority[5].if', 'road_class == SECONDARY || road_class == TERTIARY');
-                url.searchParams.append('custom_model.priority[5].multiply_by', '1.3');
-                url.searchParams.append('custom_model.distance_influence[5].if', 'true');
-                url.searchParams.append('custom_model.distance_influence[5].multiply_by', '0.5');
+                url.searchParams.append('custom_model.priority[13].if', 'road_class == SECONDARY || road_class == TERTIARY');
+                url.searchParams.append('custom_model.priority[13].multiply_by', '1.3');
+                url.searchParams.append('custom_model.distance_influence[13].if', 'true');
+                url.searchParams.append('custom_model.distance_influence[13].multiply_by', '0.5');
             } else if (routeType === 'energy_efficient') {
                 // For energy efficient routing, use custom model with preferences for smoother roads
                 url.searchParams.append('algorithm', 'dijkstra');
-                url.searchParams.append('custom_model.priority[5].if', 'road_class == RESIDENTIAL || road_class == CYCLEWAY');
-                url.searchParams.append('custom_model.priority[5].multiply_by', '1.5');
-                url.searchParams.append('custom_model.priority[6].if', 'road_class == SECONDARY || road_class == TERTIARY');
-                url.searchParams.append('custom_model.priority[6].multiply_by', '1.2');
-                url.searchParams.append('custom_model.distance_influence[5].if', 'true');
-                url.searchParams.append('custom_model.distance_influence[5].multiply_by', '0.7');
+                url.searchParams.append('custom_model.priority[13].if', 'road_class == RESIDENTIAL || road_class == CYCLEWAY');
+                url.searchParams.append('custom_model.priority[13].multiply_by', '1.5');
+                url.searchParams.append('custom_model.priority[14].if', 'road_class == SECONDARY || road_class == TERTIARY');
+                url.searchParams.append('custom_model.priority[14].multiply_by', '1.2');
+                url.searchParams.append('custom_model.distance_influence[13].if', 'true');
+                url.searchParams.append('custom_model.distance_influence[13].multiply_by', '0.7');
             }
 
             const response = await fetch(url);
@@ -442,6 +522,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     [out:json][timeout:10];
                     (
                         way(around:50,${lat},${lng})[highway];
+                        way(around:50,${lat},${lng})[traffic_sign~"NL:"];
+                        way(around:50,${lat},${lng})[zone:maxspeed];
+                        way(around:50,${lat},${lng})[zone:traffic_sign~"NL:"];
+                        way(around:50,${lat},${lng})[cycleway:moped];
+                        node(around:50,${lat},${lng})[traffic_sign~"NL:"];
                         relation(around:100,${lat},${lng})[boundary];
                         node(around:100,${lat},${lng})[amenity];
                         node(around:100,${lat},${lng})[shop];
@@ -469,12 +554,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         const amenities = [];
                         const shops = [];
                         const tourism = [];
+                        const trafficSigns = [];
+                        const mopedInfrastructure = [];
                         
                         overpassData.elements.forEach(element => {
                             if (element.tags) {
                                 if (element.tags.highway) {
                                     roads.push(element);
-                                } else if (element.tags.boundary) {
+                                }
+                                if (element.tags.traffic_sign && element.tags.traffic_sign.includes('NL:')) {
+                                    trafficSigns.push(element);
+                                }
+                                if (element.tags['cycleway:moped'] || element.tags['zone:maxspeed'] || element.tags['zone:traffic_sign']) {
+                                    mopedInfrastructure.push(element);
+                                }
+                                if (element.tags.boundary) {
                                     boundaries.push(element);
                                 } else if (element.tags.amenity) {
                                     amenities.push(element);
@@ -486,13 +580,49 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         });
                         
+                        // Add Dutch traffic signs information
+                        if (trafficSigns.length > 0) {
+                            info += '**Dutch Traffic Signs:**\n';
+                            trafficSigns.slice(0, 5).forEach(sign => {
+                                const signType = sign.tags.traffic_sign;
+                                const signName = getTrafficSignDescription(signType);
+                                const mopedRelevant = isMopedRelevantSign(signType);
+                                const icon = mopedRelevant ? '🛵' : '🚗';
+                                info += `${icon} ${signName} (${signType})\n`;
+                            });
+                            info += '\n';
+                        }
+                        
+                        // Add moped infrastructure information
+                        if (mopedInfrastructure.length > 0) {
+                            info += '**Moped Infrastructure:**\n';
+                            mopedInfrastructure.slice(0, 5).forEach(infra => {
+                                if (infra.tags['cycleway:moped']) {
+                                    const access = infra.tags['cycleway:moped'];
+                                    const name = infra.tags.name || 'Cycleway';
+                                    info += `🚴 ${name} - Moped access: ${access}\n`;
+                                }
+                                if (infra.tags['zone:maxspeed']) {
+                                    const speed = infra.tags['zone:maxspeed'];
+                                    info += `⚡ Speed zone: ${speed} km/h\n`;
+                                }
+                                if (infra.tags['zone:traffic_sign']) {
+                                    const zoneSign = infra.tags['zone:traffic_sign'];
+                                    info += `📍 Zone sign: ${zoneSign}\n`;
+                                }
+                            });
+                            info += '\n';
+                        }
+
                         // Add nearby roads
                         if (roads.length > 0) {
                             info += '**Nearby Roads:**\n';
                             roads.slice(0, 5).forEach(road => {
                                 const name = road.tags.name || 'Unnamed road';
                                 const type = road.tags.highway;
-                                info += `${name} (${type})\n`;
+                                const maxspeed = road.tags.maxspeed ? ` (${road.tags.maxspeed})` : '';
+                                const mopedAccess = road.tags.moped ? ` [Moped: ${road.tags.moped}]` : '';
+                                info += `${name} (${type})${maxspeed}${mopedAccess}\n`;
                             });
                             info += '\n';
                         }
