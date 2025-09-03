@@ -208,3 +208,40 @@ describe('Map Click Functionality', () => {
     expect(styleContent).toContain('.map-click-active');
   });
 });
+
+describe('Context Menu Functionality', () => {
+  test('should have context menu HTML element', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('id="context-menu"');
+    expect(htmlContent).toContain('data-action="directions-from"');
+    expect(htmlContent).toContain('data-action="directions-to"');
+    expect(htmlContent).toContain('data-action="show-address"');
+    expect(htmlContent).toContain('data-action="query-features"');
+  });
+
+  test('should have context menu CSS styling', () => {
+    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
+    expect(styleContent).toContain('.context-menu');
+    expect(styleContent).toContain('.context-menu-item');
+    expect(styleContent).toContain('.context-menu-separator');
+  });
+
+  test('should have context menu functions defined', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('showContextMenu');
+    expect(scriptContent).toContain('hideContextMenu');
+    expect(scriptContent).toContain('handleContextMenuClick');
+    expect(scriptContent).toContain('reverseGeocode');
+    expect(scriptContent).toContain('queryFeatures');
+  });
+
+  test('should have right-click event listener', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain("map.on('contextmenu', showContextMenu)");
+  });
+
+  test('should have reverse geocoding API endpoint', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('https://nominatim.openstreetmap.org/reverse');
+  });
+});
