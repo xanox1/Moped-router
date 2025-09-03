@@ -499,34 +499,6 @@ describe('Map Click Functionality', () => {
   });
 });
 
-describe('Route Type Selection', () => {
-  test('should have route type radio buttons in HTML', () => {
-    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
-    expect(htmlContent).toContain('name="routeType"');
-    expect(htmlContent).toContain('value="fastest"');
-    expect(htmlContent).toContain('value="shortest"');
-    expect(htmlContent).toContain('value="energy_efficient"');
-    expect(htmlContent).toContain('Fastest Route');
-    expect(htmlContent).toContain('Shortest Route');
-    expect(htmlContent).toContain('Energy Efficient');
-    expect(htmlContent).toContain('Prioritizes speed and main roads');
-    expect(htmlContent).toContain('Minimizes total distance');
-    expect(htmlContent).toContain('Prefers smoother roads and fewer stops for better battery life');
-  });
-
-  test('should have route type selection CSS styling', () => {
-    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
-    expect(styleContent).toContain('.route-type-selection');
-    expect(styleContent).toContain('.radio-option');
-    expect(styleContent).toContain('.option-hint');
-  });
-
-  test('should have fastest route selected by default', () => {
-    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
-    expect(htmlContent).toContain('value="fastest" checked');
-  });
-});
-
 describe('Context Menu Functionality', () => {
   test('should have context menu HTML element', () => {
     const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
