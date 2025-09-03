@@ -16,31 +16,34 @@
         <div class="controls">
             <h1>Moped Router</h1>
             <div class="input-group">
-                <label for="start">From</label>
+                <label for="start">📍 From</label>
                 <input type="text" id="start" value="" placeholder="e.g., Amsterdam Central Station or 52.3702,4.8952">
                 <small class="field-hint">Click here, then click on the map to set coordinates</small>
             </div>
             <div class="input-group">
-                <label for="end">To</label>
+                <label for="end">🎯 To</label>
                 <input type="text" id="end" value="" placeholder="e.g., Utrecht Centraal or 52.0907,5.1214">
                 <small class="field-hint">Click here, then click on the map to set coordinates</small>
             </div>
-
-
-
-            <button id="getRouteBtn">Get Route</button>
-            <button id="clearRouteBtn">Clear Route</button>
             
             <div class="api-status">
-                <label>API Status:</label>
+                <label>🌐 API Status:</label>
                 <span id="api-status-indicator" class="status-indicator unknown">Unknown</span>
-                <button id="testApiBtn">Test API</button>
+                <button id="testApiBtn">🔧 Test API</button>
             </div>
 
             <div id="route-info"></div>
             <div id="error-message" class="error"></div>
         </div>
-        <div id="map"></div>
+        <div id="map">
+            <div class="map-placeholder">
+                <div class="map-placeholder-content">
+                    <div class="map-icon">🗺️</div>
+                    <h3>Interactive Map</h3>
+                    <p>The map will appear here once loaded.<br>You can click on the map to set coordinates.</p>
+                </div>
+            </div>
+        </div>
         
         <!-- Context Menu -->
         <div id="context-menu" class="context-menu" style="display: none;">
