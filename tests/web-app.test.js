@@ -251,6 +251,24 @@ describe('Moped Routing Rules', () => {
     // This dual approach ensures PRIMARY roads (like N334) are never used for moped routing
     // even when routing between cities like Reduzum to Zwolle or Heerenveen to Zwolle
   });
+
+  test('should have PRIMARY roads ignored during import in GraphHopper config', () => {
+    const configContent = require('fs').readFileSync('./config.yml', 'utf8');
+    
+    // Verify that PRIMARY roads are in the ignored_highways list
+    expect(configContent).toContain('import.osm.ignored_highways:');
+    expect(configContent).toContain('primary');
+    expect(configContent).toContain('primary_link');
+    
+    // Verify the complete ignored highways list includes all blocked road types
+    const ignoredHighwaysLine = configContent.split('\n').find(line => 
+      line.includes('import.osm.ignored_highways:')
+    );
+    expect(ignoredHighwaysLine).toContain('motorway');
+    expect(ignoredHighwaysLine).toContain('trunk');
+    expect(ignoredHighwaysLine).toContain('primary');
+    expect(ignoredHighwaysLine).toContain('primary_link');
+  });
 });
 
 describe('Map Click Functionality', () => {
