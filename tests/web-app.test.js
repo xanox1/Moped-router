@@ -129,7 +129,17 @@ describe('Moped Routing Rules', () => {
       rule.if === 'road_class == PRIMARY'
     );
     expect(primaryRoadRule).toBeDefined();
-    expect(primaryRoadRule.multiply_by).toBe('0.0');
+    expect(primaryRoadRule.multiply_by).toBe(0);
+    
+    // Should also have distance influence to make PRIMARY roads extremely costly
+    expect(mopedRules.distance_influence).toBeDefined();
+    expect(Array.isArray(mopedRules.distance_influence)).toBe(true);
+    
+    const primaryDistanceRule = mopedRules.distance_influence.find(rule => 
+      rule.if === 'road_class == PRIMARY'
+    );
+    expect(primaryDistanceRule).toBeDefined();
+    expect(primaryDistanceRule.multiply_by).toBe(1000);
   });
 
   test('should have reduced priority for MOTORWAY and TRUNK roads', () => {
@@ -153,6 +163,27 @@ describe('Moped Routing Rules', () => {
     );
     expect(speedRule).toBeDefined();
     expect(speedRule.limit_to).toBe('45');
+  });
+
+  test('should have comprehensive blocking for PRIMARY roads (N roads like N334)', () => {
+    const mopedRules = require('../moped-rules.json');
+    
+    // PRIMARY roads should have zero priority (completely blocked)
+    const primaryPriorityRule = mopedRules.priority.find(rule => 
+      rule.if === 'road_class == PRIMARY'
+    );
+    expect(primaryPriorityRule).toBeDefined();
+    expect(primaryPriorityRule.multiply_by).toBe(0);
+    
+    // PRIMARY roads should have extremely high distance cost (1000x normal)
+    const primaryDistanceRule = mopedRules.distance_influence.find(rule => 
+      rule.if === 'road_class == PRIMARY'
+    );
+    expect(primaryDistanceRule).toBeDefined();
+    expect(primaryDistanceRule.multiply_by).toBe(1000);
+    
+    // This dual approach ensures PRIMARY roads (like N334) are never used for moped routing
+    // even when routing between cities like Reduzum to Zwolle or Heerenveen to Zwolle
   });
 });
 

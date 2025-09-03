@@ -12,7 +12,13 @@
     },
     {
       "if": "road_class == PRIMARY",
-      "multiply_by": "0.0"
+      "multiply_by": 0
+    }
+  ],
+  "distance_influence": [
+    {
+      "if": "road_class == PRIMARY",
+      "multiply_by": 1000
     }
   ]
 }
