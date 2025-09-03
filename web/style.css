@@ -109,22 +109,6 @@ h1::after {
     font-style: italic;
 }
 
-.input-group input.map-click-active {
-    border-color: #764ba2;
-    box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.2);
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-    transform: translateY(-2px);
-}
-
-.field-hint {
-    display: block;
-    margin-top: 8px;
-    font-size: 0.85rem;
-    color: #7f8c8d;
-    font-style: italic;
-    padding-left: 5px;
-}
-
 .api-status {
     margin-bottom: 25px;
     padding: 20px;
