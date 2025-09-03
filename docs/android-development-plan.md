@@ -40,7 +40,7 @@ The Android app will follow the MVVM architecture pattern with:
 
 ## API Integration
 The Android app will use the same GraphHopper API endpoint:
-- Base URL: `https://graphhopper.xanox.org:8989`
+- Base URL: `https://graphhopper.xanox.org/`
 - Profile: `moped`
 - Response format: GeoJSON
 

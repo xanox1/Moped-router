@@ -50,7 +50,7 @@ docs/
 - ✅ Responsive design
 
 ### API Integration
-- **Endpoint**: `https://graphhopper.xanox.org:8989/route`
+- **Endpoint**: `https://graphhopper.xanox.org/route`
 - **Profile**: moped (45 km/h max speed)
 - **Parameters**: start point, end point, profile, points_encoded=false
 - **Response**: GeoJSON route with distance and time
