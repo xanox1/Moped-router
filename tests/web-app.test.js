@@ -76,7 +76,7 @@ describe('Moped Router Web App', () => {
     expect(url.toString()).toContain('points_encoded=false');
   });
 
-  test('should include optimize parameter for fastest route', () => {
+  test('should include correct parameters for fastest route', () => {
     const baseUrl = 'https://graphhopper.xanox.org/route';
     const startPoint = '52.3702,4.8952';
     const endPoint = '52.0907,5.1214';
@@ -86,13 +86,17 @@ describe('Moped Router Web App', () => {
     url.searchParams.append('point', startPoint);
     url.searchParams.append('point', endPoint);
     url.searchParams.append('profile', 'moped');
-    url.searchParams.append('optimize', routeType);
     url.searchParams.append('points_encoded', 'false');
+    url.searchParams.append('algorithm', 'dijkstra');
+    url.searchParams.append('weighting', 'fastest');
+    url.searchParams.append('ch.disable', 'true');
 
-    expect(url.toString()).toContain('optimize=fastest');
+    expect(url.toString()).toContain('algorithm=dijkstra');
+    expect(url.toString()).toContain('weighting=fastest');
+    expect(url.toString()).toContain('ch.disable=true');
   });
 
-  test('should include optimize parameter for shortest route', () => {
+  test('should include correct parameters for shortest route', () => {
     const baseUrl = 'https://graphhopper.xanox.org/route';
     const startPoint = '52.3702,4.8952';
     const endPoint = '52.0907,5.1214';
@@ -102,10 +106,35 @@ describe('Moped Router Web App', () => {
     url.searchParams.append('point', startPoint);
     url.searchParams.append('point', endPoint);
     url.searchParams.append('profile', 'moped');
-    url.searchParams.append('optimize', routeType);
     url.searchParams.append('points_encoded', 'false');
+    url.searchParams.append('algorithm', 'astar');
+    url.searchParams.append('weighting', 'shortest');
+    url.searchParams.append('ch.disable', 'true');
 
-    expect(url.toString()).toContain('optimize=shortest');
+    expect(url.toString()).toContain('algorithm=astar');
+    expect(url.toString()).toContain('weighting=shortest');
+    expect(url.toString()).toContain('ch.disable=true');
+  });
+
+  test('should include correct parameters for energy efficient route', () => {
+    const baseUrl = 'https://graphhopper.xanox.org/route';
+    const startPoint = '52.3702,4.8952';
+    const endPoint = '52.0907,5.1214';
+    const routeType = 'energy_efficient';
+    
+    const url = new URL(baseUrl);
+    url.searchParams.append('point', startPoint);
+    url.searchParams.append('point', endPoint);
+    url.searchParams.append('profile', 'moped');
+    url.searchParams.append('points_encoded', 'false');
+    url.searchParams.append('algorithm', 'dijkstra');
+    url.searchParams.append('ch.disable', 'true');
+    url.searchParams.append('custom_model.priority[0].if', 'road_class == RESIDENTIAL || road_class == CYCLEWAY');
+    url.searchParams.append('custom_model.priority[0].multiply_by', '1.5');
+
+    expect(url.toString()).toContain('algorithm=dijkstra');
+    expect(url.toString()).toContain('ch.disable=true');
+    expect(url.toString()).toContain('custom_model.priority');
   });
 });
 
@@ -247,10 +276,13 @@ describe('Route Type Selection', () => {
     expect(htmlContent).toContain('name="routeType"');
     expect(htmlContent).toContain('value="fastest"');
     expect(htmlContent).toContain('value="shortest"');
+    expect(htmlContent).toContain('value="energy_efficient"');
     expect(htmlContent).toContain('Fastest Route');
     expect(htmlContent).toContain('Shortest Route');
-    expect(htmlContent).toContain('Prefers longer stretches with fewer turns');
+    expect(htmlContent).toContain('Energy Efficient');
+    expect(htmlContent).toContain('Prioritizes speed and main roads');
     expect(htmlContent).toContain('Minimizes total distance');
+    expect(htmlContent).toContain('Prefers smoother roads and fewer stops for better battery life');
   });
 
   test('should have route type selection CSS styling', () => {
