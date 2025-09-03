@@ -43,6 +43,35 @@ h1 {
     text-align: center;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
     position: relative;
+    margin-bottom: 10px;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.settings-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    color: #2d3436;
+    width: auto;
+    margin-bottom: 0;
+    box-shadow: none;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.settings-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: rotate(90deg) scale(1.1);
 }
 
 h1::before {
@@ -807,4 +836,106 @@ button:disabled {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.5;
     color: #333;
+}
+
+/* Settings Modal Styles */
+.settings-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 20000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-modal-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    max-height: 80vh;
+    width: 90%;
+    overflow: hidden;
+}
+
+.settings-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+}
+
+.settings-modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.settings-modal-close {
+    font-size: 24px;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 5px;
+}
+
+.settings-modal-close:hover {
+    color: #000;
+}
+
+.settings-modal-body {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.settings-modal-body h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.settings-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+    position: relative;
+    font-size: 0.95rem;
+}
+
+.setting-item:hover {
+    background-color: #f8f9fa;
+}
+
+.setting-item input[type="checkbox"] {
+    margin-right: 12px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.checkmark {
+    margin-left: 8px;
+}
+
+/* Hidden sections */
+.section-hidden {
+    display: none !important;
 }

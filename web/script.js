@@ -16,6 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const apiStatusIndicator = document.getElementById('api-status-indicator');
     const routeInfoDiv = document.getElementById('route-info');
     const errorMessageDiv = document.getElementById('error-message');
+    
+    // Settings elements
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsModal = document.getElementById('settings-modal');
+    const settingsModalClose = document.querySelector('.settings-modal-close');
 
     // Check if Leaflet is available before initializing map
     let map, routeLayer;
@@ -839,8 +844,95 @@ document.addEventListener('DOMContentLoaded', () => {
             setActiveField(null);
             hideContextMenu();
             hideFeatureModal();
+            hideSettingsModal();
         }
     });
+
+    // --- Settings Functionality ---
+    const settingsConfig = {
+        'api-status': { element: '#api-status', default: true },
+        'user-section': { element: '#user-section', default: true },
+        'community-section': { element: '#community-section', default: true },
+        'achievements-section': { element: '#achievements-section', default: true },
+        'community-stats': { element: '#community-stats', default: true }
+    };
+
+    const loadSettings = () => {
+        const savedSettings = localStorage.getItem('moped-router-settings');
+        const settings = savedSettings ? JSON.parse(savedSettings) : {};
+        
+        Object.keys(settingsConfig).forEach(key => {
+            const setting = settings[key] !== undefined ? settings[key] : settingsConfig[key].default;
+            const checkbox = document.getElementById(`setting-${key}`);
+            const element = document.querySelector(settingsConfig[key].element);
+            
+            if (checkbox) {
+                checkbox.checked = setting;
+            }
+            if (element) {
+                if (setting) {
+                    element.classList.remove('section-hidden');
+                } else {
+                    element.classList.add('section-hidden');
+                }
+            }
+        });
+    };
+
+    const saveSettings = () => {
+        const settings = {};
+        Object.keys(settingsConfig).forEach(key => {
+            const checkbox = document.getElementById(`setting-${key}`);
+            if (checkbox) {
+                settings[key] = checkbox.checked;
+            }
+        });
+        localStorage.setItem('moped-router-settings', JSON.stringify(settings));
+    };
+
+    const applySettings = () => {
+        Object.keys(settingsConfig).forEach(key => {
+            const checkbox = document.getElementById(`setting-${key}`);
+            const element = document.querySelector(settingsConfig[key].element);
+            
+            if (checkbox && element) {
+                if (checkbox.checked) {
+                    element.classList.remove('section-hidden');
+                } else {
+                    element.classList.add('section-hidden');
+                }
+            }
+        });
+        saveSettings();
+    };
+
+    const showSettingsModal = () => {
+        settingsModal.style.display = 'flex';
+    };
+
+    const hideSettingsModal = () => {
+        settingsModal.style.display = 'none';
+    };
+
+    // Settings event listeners
+    settingsBtn.addEventListener('click', showSettingsModal);
+    settingsModalClose.addEventListener('click', hideSettingsModal);
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+            hideSettingsModal();
+        }
+    });
+
+    // Settings checkbox event listeners
+    Object.keys(settingsConfig).forEach(key => {
+        const checkbox = document.getElementById(`setting-${key}`);
+        if (checkbox) {
+            checkbox.addEventListener('change', applySettings);
+        }
+    });
+
+    // Load settings on page load
+    loadSettings();
 
     // --- Gamification Features ---
     

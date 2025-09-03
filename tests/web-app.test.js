@@ -551,3 +551,63 @@ describe('Enhanced Context Menu Features', () => {
     expect(scriptContent).toContain('e.target === featureModal');
   });
 });
+
+describe('Settings Menu Functionality', () => {
+  test('should have settings button in HTML', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('id="settings-btn"');
+    expect(htmlContent).toContain('class="settings-btn"');
+    expect(htmlContent).toContain('⚙️');
+  });
+
+  test('should have settings modal HTML elements', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('id="settings-modal"');
+    expect(htmlContent).toContain('class="settings-modal"');
+    expect(htmlContent).toContain('id="setting-api-status"');
+    expect(htmlContent).toContain('id="setting-user-section"');
+    expect(htmlContent).toContain('id="setting-community-section"');
+    expect(htmlContent).toContain('id="setting-achievements-section"');
+    expect(htmlContent).toContain('id="setting-community-stats"');
+  });
+
+  test('should have settings modal CSS styling', () => {
+    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
+    expect(styleContent).toContain('.settings-modal');
+    expect(styleContent).toContain('.settings-modal-content');
+    expect(styleContent).toContain('.settings-modal-header');
+    expect(styleContent).toContain('.settings-modal-body');
+    expect(styleContent).toContain('.settings-options');
+    expect(styleContent).toContain('.setting-item');
+    expect(styleContent).toContain('.section-hidden');
+  });
+
+  test('should have settings functions defined', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('loadSettings');
+    expect(scriptContent).toContain('saveSettings');
+    expect(scriptContent).toContain('applySettings');
+    expect(scriptContent).toContain('showSettingsModal');
+    expect(scriptContent).toContain('hideSettingsModal');
+    expect(scriptContent).toContain('localStorage');
+  });
+
+  test('should have settings configuration object', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('settingsConfig');
+    expect(scriptContent).toContain('#api-status');
+    expect(scriptContent).toContain('#user-section');
+    expect(scriptContent).toContain('#community-section');
+    expect(scriptContent).toContain('#achievements-section');
+    expect(scriptContent).toContain('#community-stats');
+  });
+
+  test('should have toggleable sections with IDs', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('id="api-status"');
+    expect(htmlContent).toContain('id="user-section"');
+    expect(htmlContent).toContain('id="community-section"');
+    expect(htmlContent).toContain('id="achievements-section"');
+    expect(htmlContent).toContain('id="community-stats"');
+  });
+});

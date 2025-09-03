@@ -14,10 +14,13 @@
 <body>
     <div class="container">
         <div class="controls">
-            <h1>Moped Router</h1>
+            <div class="header-section">
+                <h1>Moped Router</h1>
+                <button id="settings-btn" class="settings-btn" title="Settings">⚙️</button>
+            </div>
             
             <!-- User Avatar/Mood Section -->
-            <div class="user-section">
+            <div class="user-section" id="user-section">
                 <div class="avatar-container">
                     <div class="avatar" id="user-avatar">😊</div>
                     <div class="user-info">
@@ -54,7 +57,7 @@
             <button id="clearRouteBtn">Clear Route</button>
             
             <!-- Community Reporting Section -->
-            <div class="community-section">
+            <div class="community-section" id="community-section">
                 <h3>🚨 Report Road Conditions</h3>
                 <div class="report-buttons">
                     <button class="report-btn traffic-btn" data-type="traffic">
@@ -72,7 +75,7 @@
                 </div>
             </div>
             
-            <div class="api-status">
+            <div class="api-status" id="api-status">
                 <label>API Status:</label>
                 <span id="api-status-indicator" class="status-indicator unknown">Unknown</span>
                 <button id="testApiBtn">Test API</button>
@@ -82,7 +85,7 @@
             <div id="error-message" class="error"></div>
             
             <!-- Achievement Section -->
-            <div class="achievements-section">
+            <div class="achievements-section" id="achievements-section">
                 <h3>🏆 Recent Achievements</h3>
                 <div class="achievement-badges">
                     <div class="badge earned" title="First Route Planned">🗺️</div>
@@ -93,7 +96,7 @@
             </div>
             
             <!-- Community Stats -->
-            <div class="community-stats">
+            <div class="community-stats" id="community-stats">
                 <h3>📊 Community Activity</h3>
                 <div class="stats-grid">
                     <div class="stat-item">
@@ -139,6 +142,46 @@
                 </div>
                 <div class="feature-modal-body" id="feature-modal-body">
                     <!-- Feature information will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="settings-modal" style="display: none;">
+            <div class="settings-modal-content">
+                <div class="settings-modal-header">
+                    <h3>⚙️ Settings</h3>
+                    <span class="settings-modal-close">&times;</span>
+                </div>
+                <div class="settings-modal-body">
+                    <h4>Show/Hide Sections</h4>
+                    <div class="settings-options">
+                        <label class="setting-item">
+                            <input type="checkbox" id="setting-api-status" checked>
+                            <span class="checkmark"></span>
+                            🌐 API Status
+                        </label>
+                        <label class="setting-item">
+                            <input type="checkbox" id="setting-user-section" checked>
+                            <span class="checkmark"></span>
+                            😊 User Account & Emoticons
+                        </label>
+                        <label class="setting-item">
+                            <input type="checkbox" id="setting-community-section" checked>
+                            <span class="checkmark"></span>
+                            🚨 Community Reporting
+                        </label>
+                        <label class="setting-item">
+                            <input type="checkbox" id="setting-achievements-section" checked>
+                            <span class="checkmark"></span>
+                            🏆 Achievements
+                        </label>
+                        <label class="setting-item">
+                            <input type="checkbox" id="setting-community-stats" checked>
+                            <span class="checkmark"></span>
+                            📊 Community Stats
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
