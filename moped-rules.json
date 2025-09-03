@@ -13,11 +13,43 @@
     {
       "if": "road_class == PRIMARY",
       "multiply_by": 0
+    },
+    {
+      "if": "moped == no",
+      "multiply_by": 0
+    },
+    {
+      "if": "motor_vehicle == no",
+      "multiply_by": 0
+    },
+    {
+      "if": "vehicle == no",
+      "multiply_by": 0
+    },
+    {
+      "if": "max_speed > 45",
+      "multiply_by": 0
     }
   ],
   "distance_influence": [
     {
       "if": "road_class == PRIMARY",
+      "multiply_by": 1000
+    },
+    {
+      "if": "moped == no",
+      "multiply_by": 1000
+    },
+    {
+      "if": "motor_vehicle == no",
+      "multiply_by": 1000
+    },
+    {
+      "if": "vehicle == no",
+      "multiply_by": 1000
+    },
+    {
+      "if": "max_speed > 45",
       "multiply_by": 1000
     }
   ]
