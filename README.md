@@ -33,7 +33,7 @@ moped-router/
 ### GraphHopper Backend
 - Customized for moped routing (45 km/h max speed)
 - Reduced priority for motorways and trunk roads
-- Blocks PRIMARY roads (N roads) where mopeds are not allowed
+- Completely blocks PRIMARY roads (N roads) using dual mechanism: zero priority and extreme distance penalties
 - Netherlands map data support
 - Docker containerized deployment
 
@@ -196,5 +196,5 @@ The server will respond with a GeoJSON object containing the route geometry, dis
 
 -   `docker-compose.yml`: Defines the `graphhopper` service, volumes for data persistence, and port mappings.
 -   `config/config.yml`: The primary configuration file for the GraphHopper instance. It defines data sources, profiles, and server settings.
--   `config/moped-rules.json`: A GraphHopper custom model file. It sets a top speed of 45 km/h, reduces the priority of motorways and trunk roads, and blocks PRIMARY roads (N roads) to prevent moped routing on roads where mopeds are not allowed.
+-   `config/moped-rules.json`: A GraphHopper custom model file. It sets a top speed of 45 km/h, reduces the priority of motorways and trunk roads, and completely blocks PRIMARY roads (N roads) using both zero priority and extreme distance penalties to prevent moped routing on roads where mopeds are not allowed.
 -   `.gitignore`: Prevents local data and cache directories from being committed to the repository.
