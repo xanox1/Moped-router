@@ -88,12 +88,16 @@ describe('Moped Router Web App', () => {
     url.searchParams.append('profile', 'moped');
     url.searchParams.append('points_encoded', 'false');
     url.searchParams.append('algorithm', 'dijkstra');
-    url.searchParams.append('weighting', 'fastest');
     url.searchParams.append('ch.disable', 'true');
+    url.searchParams.append('custom_model.priority[0].if', 'road_class == SECONDARY || road_class == TERTIARY');
+    url.searchParams.append('custom_model.priority[0].multiply_by', '1.3');
+    url.searchParams.append('custom_model.distance_influence[0].if', 'true');
+    url.searchParams.append('custom_model.distance_influence[0].multiply_by', '0.5');
 
     expect(url.toString()).toContain('algorithm=dijkstra');
-    expect(url.toString()).toContain('weighting=fastest');
     expect(url.toString()).toContain('ch.disable=true');
+    expect(url.toString()).toContain('custom_model.priority');
+    expect(url.toString()).toContain('custom_model.distance_influence');
   });
 
   test('should include correct parameters for shortest route', () => {
@@ -108,12 +112,13 @@ describe('Moped Router Web App', () => {
     url.searchParams.append('profile', 'moped');
     url.searchParams.append('points_encoded', 'false');
     url.searchParams.append('algorithm', 'astar');
-    url.searchParams.append('weighting', 'shortest');
     url.searchParams.append('ch.disable', 'true');
+    url.searchParams.append('custom_model.distance_influence[0].if', 'true');
+    url.searchParams.append('custom_model.distance_influence[0].multiply_by', '2.0');
 
     expect(url.toString()).toContain('algorithm=astar');
-    expect(url.toString()).toContain('weighting=shortest');
     expect(url.toString()).toContain('ch.disable=true');
+    expect(url.toString()).toContain('custom_model.distance_influence');
   });
 
   test('should include correct parameters for energy efficient route', () => {
