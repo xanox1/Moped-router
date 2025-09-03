@@ -76,3 +76,42 @@ describe('Moped Router Web App', () => {
     expect(url.toString()).toContain('points_encoded=false');
   });
 });
+
+describe('Geocoding Functionality', () => {
+  // Helper functions to test (extracted from script.js logic)
+  const isCoordinate = (input) => {
+    const coordPattern = /^-?\d+\.?\d*,-?\d+\.?\d*$/;
+    return coordPattern.test(input.trim());
+  };
+
+  test('should detect coordinate format correctly', () => {
+    expect(isCoordinate('52.3702,4.8952')).toBe(true);
+    expect(isCoordinate('52,4')).toBe(true);
+    expect(isCoordinate('-52.3702,-4.8952')).toBe(true);
+    expect(isCoordinate('52.3702, 4.8952')).toBe(false); // space not allowed
+    expect(isCoordinate('Amsterdam Central Station')).toBe(false);
+    expect(isCoordinate('Damrak 1, Amsterdam')).toBe(false);
+    expect(isCoordinate('')).toBe(false);
+  });
+
+  test('should have Nominatim API URL configured', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('https://nominatim.openstreetmap.org/search');
+  });
+
+  test('should construct correct Nominatim API URL', () => {
+    const baseUrl = 'https://nominatim.openstreetmap.org/search';
+    const address = 'Amsterdam Central Station';
+    
+    const url = new URL(baseUrl);
+    url.searchParams.append('q', address);
+    url.searchParams.append('format', 'json');
+    url.searchParams.append('limit', '1');
+    url.searchParams.append('countrycodes', 'nl');
+
+    expect(url.toString()).toContain('q=Amsterdam+Central+Station');
+    expect(url.toString()).toContain('format=json');
+    expect(url.toString()).toContain('limit=1');
+    expect(url.toString()).toContain('countrycodes=nl');
+  });
+});

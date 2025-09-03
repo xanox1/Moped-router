@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Configuration ---
     const GRAPHHOPPER_API_URL = 'https://graphhopper.xanox.org/route';
+    const NOMINATIM_API_URL = 'https://nominatim.openstreetmap.org/search';
     const MAP_CENTER = [52.2, 5.5]; // Center of the Netherlands
     const MAP_ZOOM = 8;
     const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -39,6 +40,48 @@ document.addEventListener('DOMContentLoaded', () => {
             start: '52.0907,5.1214',
             end: '51.9851,5.8987',
             name: 'Utrecht to Arnhem'
+        },
+        'address-example': {
+            start: 'Amsterdam Central Station',
+            end: 'Utrecht Centraal',
+            name: 'Address Example (Amsterdam CS to Utrecht CS)'
+        }
+    };
+
+    // --- Utility Functions ---
+    const isCoordinate = (input) => {
+        // Check if input matches lat,lon format (e.g., "52.3702,4.8952")
+        const coordPattern = /^-?\d+\.?\d*,-?\d+\.?\d*$/;
+        return coordPattern.test(input.trim());
+    };
+
+    const geocodeAddress = async (address) => {
+        const url = new URL(NOMINATIM_API_URL);
+        url.searchParams.append('q', address);
+        url.searchParams.append('format', 'json');
+        url.searchParams.append('limit', '1');
+        url.searchParams.append('countrycodes', 'nl'); // Limit to Netherlands for better results
+        
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data && data.length > 0) {
+                const result = data[0];
+                return `${result.lat},${result.lon}`;
+            } else {
+                throw new Error(`No location found for: ${address}`);
+            }
+        } catch (error) {
+            throw new Error(`Geocoding failed: ${error.message}`);
+        }
+    };
+
+    const resolveLocation = async (input) => {
+        if (isCoordinate(input)) {
+            return input;
+        } else {
+            return await geocodeAddress(input);
         }
     };
 
@@ -57,13 +100,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const url = new URL(GRAPHHOPPER_API_URL);
-        url.searchParams.append('point', startPoint);
-        url.searchParams.append('point', endPoint);
-        url.searchParams.append('profile', 'moped');
-        url.searchParams.append('points_encoded', 'false'); // We want GeoJSON coordinates
-
         try {
+            // Show loading state
+            getRouteBtn.disabled = true;
+            getRouteBtn.textContent = 'Finding Route...';
+
+            // Resolve locations (geocode if needed)
+            const resolvedStart = await resolveLocation(startPoint);
+            const resolvedEnd = await resolveLocation(endPoint);
+
+            const url = new URL(GRAPHHOPPER_API_URL);
+            url.searchParams.append('point', resolvedStart);
+            url.searchParams.append('point', resolvedEnd);
+            url.searchParams.append('profile', 'moped');
+            url.searchParams.append('points_encoded', 'false'); // We want GeoJSON coordinates
+
             const response = await fetch(url);
             const data = await response.json();
 
@@ -74,11 +125,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const path = data.paths[0];
             drawRoute(path.points.coordinates);
-            displayRouteInfo(path.distance, path.time);
+            displayRouteInfo(path.distance, path.time, resolvedStart, resolvedEnd);
 
         } catch (error) {
             console.error('Error fetching route:', error);
             showError(error.message);
+        } finally {
+            getRouteBtn.disabled = false;
+            getRouteBtn.textContent = 'Get Route';
         }
     };
 
@@ -98,12 +152,14 @@ document.addEventListener('DOMContentLoaded', () => {
         map.fitBounds(polyline.getBounds().pad(0.1));
     };
 
-    const displayRouteInfo = (distance, time) => {
+    const displayRouteInfo = (distance, time, startCoords, endCoords) => {
         const distanceKm = (distance / 1000).toFixed(2);
         const durationMinutes = Math.round(time / 1000 / 60);
         routeInfoDiv.innerHTML = `
             <strong>Distance:</strong> ${distanceKm} km<br>
-            <strong>Time:</strong> ${durationMinutes} minutes
+            <strong>Time:</strong> ${durationMinutes} minutes<br>
+            <small><strong>Start:</strong> ${startCoords}<br>
+            <strong>End:</strong> ${endCoords}</small>
         `;
     };
     
