@@ -245,3 +245,53 @@ describe('Context Menu Functionality', () => {
     expect(scriptContent).toContain('https://nominatim.openstreetmap.org/reverse');
   });
 });
+
+describe('Enhanced Context Menu Features', () => {
+  test('should have feature modal HTML elements', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('id="feature-modal"');
+    expect(htmlContent).toContain('class="feature-modal"');
+    expect(htmlContent).toContain('id="feature-modal-body"');
+    expect(htmlContent).toContain('class="feature-modal-close"');
+  });
+
+  test('should have feature modal CSS styling', () => {
+    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
+    expect(styleContent).toContain('.feature-modal');
+    expect(styleContent).toContain('.feature-modal-content');
+    expect(styleContent).toContain('.feature-modal-header');
+    expect(styleContent).toContain('.feature-modal-body');
+    expect(styleContent).toContain('position: fixed');
+  });
+
+  test('should have enhanced queryFeatures function with multiple API calls', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('addressdetails');
+    expect(scriptContent).toContain('extratags');
+    expect(scriptContent).toContain('namedetails');
+    expect(scriptContent).toContain('overpass-api.de');
+    expect(scriptContent).toContain('**Location Information:**');
+    expect(scriptContent).toContain('**Address Details:**');
+  });
+
+  test('should have proper context menu positioning with map offset calculation', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('getBoundingClientRect()');
+    expect(scriptContent).toContain('mapRect.left + e.containerPoint.x');
+    expect(scriptContent).toContain('mapRect.top + e.containerPoint.y');
+  });
+
+  test('should have modal show and hide functions', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('showFeatureModal');
+    expect(scriptContent).toContain('hideFeatureModal');
+    expect(scriptContent).toContain('featureModal.style.display');
+  });
+
+  test('should have modal event listeners for close functionality', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('featureModalClose.addEventListener');
+    expect(scriptContent).toContain('hideFeatureModal');
+    expect(scriptContent).toContain('e.target === featureModal');
+  });
+});

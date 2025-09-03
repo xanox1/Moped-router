@@ -232,19 +232,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showContextMenu = (e) => {
         contextMenuCoords = e.latlng;
+        
+        // Get map container position to properly position context menu relative to document
+        const mapRect = document.getElementById('map').getBoundingClientRect();
+        const x = mapRect.left + e.containerPoint.x;
+        const y = mapRect.top + e.containerPoint.y;
+        
         contextMenu.style.display = 'block';
-        contextMenu.style.left = e.containerPoint.x + 'px';
-        contextMenu.style.top = e.containerPoint.y + 'px';
+        contextMenu.style.left = x + 'px';
+        contextMenu.style.top = y + 'px';
         
         // Prevent the menu from going off-screen
         const rect = contextMenu.getBoundingClientRect();
-        const mapRect = document.getElementById('map').getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
         
-        if (rect.right > mapRect.right) {
-            contextMenu.style.left = (e.containerPoint.x - rect.width) + 'px';
+        if (rect.right > viewportWidth) {
+            contextMenu.style.left = (x - rect.width) + 'px';
         }
-        if (rect.bottom > mapRect.bottom) {
-            contextMenu.style.top = (e.containerPoint.y - rect.height) + 'px';
+        if (rect.bottom > viewportHeight) {
+            contextMenu.style.top = (y - rect.height) + 'px';
         }
     };
 
@@ -277,36 +284,221 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const queryFeatures = async (lat, lng) => {
         try {
-            // Query GraphHopper for routing information at this point
-            const url = new URL('https://graphhopper.xanox.org/route');
-            url.searchParams.append('point', `${lat},${lng}`);
-            url.searchParams.append('point', `${lat + 0.001},${lng + 0.001}`); // Nearby point
-            url.searchParams.append('profile', 'moped');
-            url.searchParams.append('debug', 'true');
-            url.searchParams.append('points_encoded', 'false');
+            let info = `Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}\n\n`;
             
-            const response = await fetch(url);
-            const data = await response.json();
+            // Query Nominatim for detailed geographic information
+            const nominatimUrl = new URL('https://nominatim.openstreetmap.org/reverse');
+            nominatimUrl.searchParams.append('lat', lat);
+            nominatimUrl.searchParams.append('lon', lng);
+            nominatimUrl.searchParams.append('format', 'json');
+            nominatimUrl.searchParams.append('addressdetails', '1');
+            nominatimUrl.searchParams.append('extratags', '1');
+            nominatimUrl.searchParams.append('namedetails', '1');
+            nominatimUrl.searchParams.append('countrycodes', 'nl');
             
-            let info = `Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}\n`;
+            const nominatimResponse = await fetch(nominatimUrl);
+            const nominatimData = await nominatimResponse.json();
             
-            if (data.paths && data.paths.length > 0) {
-                info += '\nRouting information:\n';
-                info += '- Road accessible for moped routing\n';
-                info += '- Estimated speed: 45 km/h max\n';
+            if (nominatimData && nominatimData.display_name) {
+                info += '**Location Information:**\n';
+                info += `${nominatimData.display_name}\n\n`;
                 
-                if (data.info) {
-                    info += `- Routing engine: ${data.info.build_date || 'GraphHopper'}\n`;
+                // Add category and type if available
+                if (nominatimData.category && nominatimData.type) {
+                    info += '**Feature Type:**\n';
+                    info += `${nominatimData.category}: ${nominatimData.type}\n\n`;
                 }
-            } else {
-                info += '\nNo routing information available at this location';
+                
+                // Add detailed address information
+                if (nominatimData.address) {
+                    info += '**Address Details:**\n';
+                    const address = nominatimData.address;
+                    
+                    if (address.road) info += `Road: ${address.road}\n`;
+                    if (address.house_number) info += `House number: ${address.house_number}\n`;
+                    if (address.neighbourhood) info += `Neighbourhood: ${address.neighbourhood}\n`;
+                    if (address.suburb) info += `Suburb: ${address.suburb}\n`;
+                    if (address.city || address.town || address.village) {
+                        const place = address.city || address.town || address.village;
+                        info += `City/Town: ${place}\n`;
+                    }
+                    if (address.postcode) info += `Postcode: ${address.postcode}\n`;
+                    if (address.state) info += `State/Province: ${address.state}\n`;
+                    if (address.country) info += `Country: ${address.country}\n`;
+                    info += '\n';
+                }
+                
+                // Add extra tags if available (like website, opening hours, etc.)
+                if (nominatimData.extratags && Object.keys(nominatimData.extratags).length > 0) {
+                    info += '**Additional Information:**\n';
+                    const extratags = nominatimData.extratags;
+                    
+                    if (extratags.website) info += `Website: ${extratags.website}\n`;
+                    if (extratags.phone) info += `Phone: ${extratags.phone}\n`;
+                    if (extratags.opening_hours) info += `Opening hours: ${extratags.opening_hours}\n`;
+                    if (extratags.operator) info += `Operator: ${extratags.operator}\n`;
+                    if (extratags.brand) info += `Brand: ${extratags.brand}\n`;
+                    info += '\n';
+                }
+            }
+            
+            // Query nearby features using Overpass API for more detailed information
+            try {
+                const overpassQuery = `
+                    [out:json][timeout:10];
+                    (
+                        way(around:50,${lat},${lng})[highway];
+                        relation(around:100,${lat},${lng})[boundary];
+                        node(around:100,${lat},${lng})[amenity];
+                        node(around:100,${lat},${lng})[shop];
+                        node(around:100,${lat},${lng})[tourism];
+                    );
+                    out geom;
+                `;
+                
+                const overpassUrl = 'https://overpass-api.de/api/interpreter';
+                const overpassResponse = await fetch(overpassUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `data=${encodeURIComponent(overpassQuery)}`
+                });
+                
+                if (overpassResponse.ok) {
+                    const overpassData = await overpassResponse.json();
+                    
+                    if (overpassData.elements && overpassData.elements.length > 0) {
+                        // Group features by type
+                        const roads = [];
+                        const boundaries = [];
+                        const amenities = [];
+                        const shops = [];
+                        const tourism = [];
+                        
+                        overpassData.elements.forEach(element => {
+                            if (element.tags) {
+                                if (element.tags.highway) {
+                                    roads.push(element);
+                                } else if (element.tags.boundary) {
+                                    boundaries.push(element);
+                                } else if (element.tags.amenity) {
+                                    amenities.push(element);
+                                } else if (element.tags.shop) {
+                                    shops.push(element);
+                                } else if (element.tags.tourism) {
+                                    tourism.push(element);
+                                }
+                            }
+                        });
+                        
+                        // Add nearby roads
+                        if (roads.length > 0) {
+                            info += '**Nearby Roads:**\n';
+                            roads.slice(0, 5).forEach(road => {
+                                const name = road.tags.name || 'Unnamed road';
+                                const type = road.tags.highway;
+                                info += `${name} (${type})\n`;
+                            });
+                            info += '\n';
+                        }
+                        
+                        // Add administrative boundaries
+                        if (boundaries.length > 0) {
+                            info += '**Administrative Boundaries:**\n';
+                            boundaries.slice(0, 3).forEach(boundary => {
+                                const name = boundary.tags.name || 'Unnamed boundary';
+                                const type = boundary.tags.boundary;
+                                const level = boundary.tags.admin_level;
+                                info += `${name} (${type}${level ? `, level ${level}` : ''})\n`;
+                            });
+                            info += '\n';
+                        }
+                        
+                        // Add nearby amenities
+                        if (amenities.length > 0) {
+                            info += '**Nearby Amenities:**\n';
+                            amenities.slice(0, 5).forEach(amenity => {
+                                const name = amenity.tags.name || `${amenity.tags.amenity}`;
+                                info += `${name}\n`;
+                            });
+                            info += '\n';
+                        }
+                        
+                        // Add nearby shops
+                        if (shops.length > 0) {
+                            info += '**Nearby Shops:**\n';
+                            shops.slice(0, 5).forEach(shop => {
+                                const name = shop.tags.name || `${shop.tags.shop}`;
+                                info += `${name}\n`;
+                            });
+                            info += '\n';
+                        }
+                        
+                        // Add tourism features
+                        if (tourism.length > 0) {
+                            info += '**Tourism Features:**\n';
+                            tourism.slice(0, 3).forEach(feature => {
+                                const name = feature.tags.name || `${feature.tags.tourism}`;
+                                info += `${name}\n`;
+                            });
+                            info += '\n';
+                        }
+                    }
+                }
+            } catch (overpassError) {
+                console.warn('Overpass API query failed:', overpassError);
+            }
+            
+            // Add routing information
+            try {
+                const routingUrl = new URL('https://graphhopper.xanox.org/route');
+                routingUrl.searchParams.append('point', `${lat},${lng}`);
+                routingUrl.searchParams.append('point', `${lat + 0.001},${lng + 0.001}`);
+                routingUrl.searchParams.append('profile', 'moped');
+                routingUrl.searchParams.append('debug', 'true');
+                routingUrl.searchParams.append('points_encoded', 'false');
+                
+                const routingResponse = await fetch(routingUrl);
+                const routingData = await routingResponse.json();
+                
+                info += '**Moped Routing Information:**\n';
+                if (routingData.paths && routingData.paths.length > 0) {
+                    info += '• Road accessible for moped routing\n';
+                    info += '• Maximum speed: 45 km/h\n';
+                    
+                    if (routingData.info) {
+                        info += `• Routing engine: ${routingData.info.build_date || 'GraphHopper'}\n`;
+                    }
+                } else {
+                    info += '• No moped routing available at this location\n';
+                }
+            } catch (routingError) {
+                info += '**Moped Routing Information:**\n';
+                info += '• Routing service temporarily unavailable\n';
             }
             
             return info;
+            
         } catch (error) {
             console.error('Feature query failed:', error);
-            return `Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}\nFeature query failed: ${error.message}`;
+            return `Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}\n\nFeature query failed: ${error.message}`;
         }
+    };
+
+    // --- Feature Modal Functions ---
+    const featureModal = document.getElementById('feature-modal');
+    const featureModalBody = document.getElementById('feature-modal-body');
+    const featureModalClose = document.querySelector('.feature-modal-close');
+    
+    const showFeatureModal = (content) => {
+        featureModalBody.textContent = content;
+        featureModal.style.display = 'flex';
+    };
+    
+    const hideFeatureModal = () => {
+        featureModal.style.display = 'none';
+        featureModalBody.textContent = '';
     };
 
     const handleContextMenuClick = async (action) => {
@@ -340,10 +532,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
         case 'query-features':
             try {
+                hideContextMenu(); // Hide context menu before showing modal
                 const features = await queryFeatures(lat, lng);
-                alert(`Feature Information:\n${features}`);
+                showFeatureModal(features);
             } catch (error) {
-                alert(`Error querying features: ${error.message}`);
+                showFeatureModal(`Error querying features: ${error.message}`);
             }
             break;
         }
@@ -376,11 +569,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Hide context menu when clicking elsewhere
     document.addEventListener('click', hideContextMenu);
     
-    // Escape key to deactivate field selection and hide context menu
+    // Feature modal event listeners
+    featureModalClose.addEventListener('click', hideFeatureModal);
+    featureModal.addEventListener('click', (e) => {
+        if (e.target === featureModal) {
+            hideFeatureModal();
+        }
+    });
+    
+    // Escape key to deactivate field selection and hide context menu/modal
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             setActiveField(null);
             hideContextMenu();
+            hideFeatureModal();
         }
     });
 
