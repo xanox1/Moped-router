@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             url.searchParams.append('profile', 'moped');
             url.searchParams.append('points_encoded', 'false'); // We want GeoJSON coordinates
             
-            // Always disable CH and add PRIMARY road blocking rules first
+            // Always disable CH and add comprehensive moped access blocking rules
             url.searchParams.append('ch.disable', 'true');
             
             // CRITICAL: Always block PRIMARY roads for moped routing
@@ -114,28 +114,52 @@ document.addEventListener('DOMContentLoaded', () => {
             url.searchParams.append('custom_model.distance_influence[0].if', 'road_class == PRIMARY');
             url.searchParams.append('custom_model.distance_influence[0].multiply_by', '1000');
             
+            // Block roads explicitly marked as no moped access
+            url.searchParams.append('custom_model.priority[1].if', 'moped == no');
+            url.searchParams.append('custom_model.priority[1].multiply_by', '0');
+            url.searchParams.append('custom_model.distance_influence[1].if', 'moped == no');
+            url.searchParams.append('custom_model.distance_influence[1].multiply_by', '1000');
+            
+            // Block roads with no motor vehicle access
+            url.searchParams.append('custom_model.priority[2].if', 'motor_vehicle == no');
+            url.searchParams.append('custom_model.priority[2].multiply_by', '0');
+            url.searchParams.append('custom_model.distance_influence[2].if', 'motor_vehicle == no');
+            url.searchParams.append('custom_model.distance_influence[2].multiply_by', '1000');
+            
+            // Block roads with no vehicle access
+            url.searchParams.append('custom_model.priority[3].if', 'vehicle == no');
+            url.searchParams.append('custom_model.priority[3].multiply_by', '0');
+            url.searchParams.append('custom_model.distance_influence[3].if', 'vehicle == no');
+            url.searchParams.append('custom_model.distance_influence[3].multiply_by', '1000');
+            
+            // Block roads with speed limit > 45 km/h (moped limit in Netherlands)
+            url.searchParams.append('custom_model.priority[4].if', 'max_speed > 45');
+            url.searchParams.append('custom_model.priority[4].multiply_by', '0');
+            url.searchParams.append('custom_model.distance_influence[4].if', 'max_speed > 45');
+            url.searchParams.append('custom_model.distance_influence[4].multiply_by', '1000');
+            
             // Configure routing algorithm based on route type
             if (routeType === 'shortest') {
                 // For shortest route, maximize distance influence to prioritize shortest path
                 url.searchParams.append('algorithm', 'astar');
-                url.searchParams.append('custom_model.distance_influence[1].if', 'true');
-                url.searchParams.append('custom_model.distance_influence[1].multiply_by', '2.0');
+                url.searchParams.append('custom_model.distance_influence[5].if', 'true');
+                url.searchParams.append('custom_model.distance_influence[5].multiply_by', '2.0');
             } else if (routeType === 'fastest') {
                 // For fastest route, prioritize faster roads and reduce distance penalties
                 url.searchParams.append('algorithm', 'dijkstra');
-                url.searchParams.append('custom_model.priority[1].if', 'road_class == SECONDARY || road_class == TERTIARY');
-                url.searchParams.append('custom_model.priority[1].multiply_by', '1.3');
-                url.searchParams.append('custom_model.distance_influence[1].if', 'true');
-                url.searchParams.append('custom_model.distance_influence[1].multiply_by', '0.5');
+                url.searchParams.append('custom_model.priority[5].if', 'road_class == SECONDARY || road_class == TERTIARY');
+                url.searchParams.append('custom_model.priority[5].multiply_by', '1.3');
+                url.searchParams.append('custom_model.distance_influence[5].if', 'true');
+                url.searchParams.append('custom_model.distance_influence[5].multiply_by', '0.5');
             } else if (routeType === 'energy_efficient') {
                 // For energy efficient routing, use custom model with preferences for smoother roads
                 url.searchParams.append('algorithm', 'dijkstra');
-                url.searchParams.append('custom_model.priority[1].if', 'road_class == RESIDENTIAL || road_class == CYCLEWAY');
-                url.searchParams.append('custom_model.priority[1].multiply_by', '1.5');
-                url.searchParams.append('custom_model.priority[2].if', 'road_class == SECONDARY || road_class == TERTIARY');
-                url.searchParams.append('custom_model.priority[2].multiply_by', '1.2');
-                url.searchParams.append('custom_model.distance_influence[1].if', 'true');
-                url.searchParams.append('custom_model.distance_influence[1].multiply_by', '0.7');
+                url.searchParams.append('custom_model.priority[5].if', 'road_class == RESIDENTIAL || road_class == CYCLEWAY');
+                url.searchParams.append('custom_model.priority[5].multiply_by', '1.5');
+                url.searchParams.append('custom_model.priority[6].if', 'road_class == SECONDARY || road_class == TERTIARY');
+                url.searchParams.append('custom_model.priority[6].multiply_by', '1.2');
+                url.searchParams.append('custom_model.distance_influence[5].if', 'true');
+                url.searchParams.append('custom_model.distance_influence[5].multiply_by', '0.7');
             }
 
             const response = await fetch(url);

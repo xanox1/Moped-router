@@ -35,6 +35,9 @@ moped-router/
 - Reduced priority for motorways and trunk roads
 - Completely blocks PRIMARY roads (N roads) using dual mechanism: zero priority and extreme distance penalties
 - PRIMARY roads are also excluded during OSM data import to prevent any routing through these roads
+- **Enhanced Dutch access restrictions**: Blocks roads with `moped=no`, `motor_vehicle=no`, `vehicle=no` access tags
+- **Speed-based filtering**: Automatically excludes roads with speed limits > 45 km/h (Dutch moped legal limit)
+- **Traffic sign compliance**: Considers Dutch traffic regulations and OSM access restrictions
 - Netherlands map data support
 - Docker containerized deployment
 
@@ -197,6 +200,6 @@ The server will respond with a GeoJSON object containing the route geometry, dis
 
 -   `docker-compose.yml`: Defines the `graphhopper` service, volumes for data persistence, and port mappings.
 -   `config/config.yml`: The primary configuration file for the GraphHopper instance. It defines data sources, profiles, and server settings.
--   `config/moped-rules.json`: A GraphHopper custom model file. It sets a top speed of 45 km/h, reduces the priority of motorways and trunk roads, and completely blocks PRIMARY roads (N roads) using both zero priority and extreme distance penalties to prevent moped routing on roads where mopeds are not allowed.
--   `config.yml`: GraphHopper server configuration that excludes PRIMARY roads (along with motorways and trunk roads) during OSM data import, ensuring these unsuitable roads are never available for moped routing.
+-   `config/moped-rules.json`: A GraphHopper custom model file. It sets a top speed of 45 km/h, reduces the priority of motorways and trunk roads, and completely blocks PRIMARY roads (N roads) using both zero priority and extreme distance penalties. **Enhanced with Dutch access restrictions** - also blocks roads with `moped=no`, `motor_vehicle=no`, `vehicle=no` access tags and roads with speed limits > 45 km/h.
+-   `config.yml`: GraphHopper server configuration that excludes PRIMARY roads (along with motorways and trunk roads) during OSM data import, ensuring these unsuitable roads are never available for moped routing. **Enhanced with additional encoded values** for access restrictions (`moped`, `motor_vehicle`, `vehicle`, `max_speed`).
 -   `.gitignore`: Prevents local data and cache directories from being committed to the repository.

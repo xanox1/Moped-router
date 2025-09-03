@@ -157,11 +157,27 @@ describe('Moped Router Web App', () => {
       url.searchParams.append('custom_model.distance_influence[0].if', 'road_class == PRIMARY');
       url.searchParams.append('custom_model.distance_influence[0].multiply_by', '1000');
       
+      // Dutch access restriction blocking rules
+      url.searchParams.append('custom_model.priority[1].if', 'moped == no');
+      url.searchParams.append('custom_model.priority[1].multiply_by', '0');
+      url.searchParams.append('custom_model.priority[2].if', 'motor_vehicle == no');
+      url.searchParams.append('custom_model.priority[2].multiply_by', '0');
+      url.searchParams.append('custom_model.priority[3].if', 'vehicle == no');
+      url.searchParams.append('custom_model.priority[3].multiply_by', '0');
+      url.searchParams.append('custom_model.priority[4].if', 'max_speed > 45');
+      url.searchParams.append('custom_model.priority[4].multiply_by', '0');
+      
       // All URLs must contain PRIMARY road blocking rules
       expect(url.toString()).toContain('custom_model.priority%5B0%5D.if=road_class+%3D%3D+PRIMARY');
       expect(url.toString()).toContain('custom_model.priority%5B0%5D.multiply_by=0');
       expect(url.toString()).toContain('custom_model.distance_influence%5B0%5D.if=road_class+%3D%3D+PRIMARY');
       expect(url.toString()).toContain('custom_model.distance_influence%5B0%5D.multiply_by=1000');
+      
+      // All URLs must contain Dutch access restriction blocking rules
+      expect(url.toString()).toContain('custom_model.priority%5B1%5D.if=moped+%3D%3D+no');
+      expect(url.toString()).toContain('custom_model.priority%5B2%5D.if=motor_vehicle+%3D%3D+no');
+      expect(url.toString()).toContain('custom_model.priority%5B3%5D.if=vehicle+%3D%3D+no');
+      expect(url.toString()).toContain('custom_model.priority%5B4%5D.if=max_speed+%3E+45');
     });
   });
 });
@@ -291,6 +307,70 @@ describe('Moped Routing Rules', () => {
     expect(ignoredHighwaysLine).toContain('trunk');
     expect(ignoredHighwaysLine).toContain('primary');
     expect(ignoredHighwaysLine).toContain('primary_link');
+  });
+
+  test('should block roads with Dutch access restrictions', () => {
+    const mopedRules = require('../moped-rules.json');
+    
+    // Should block roads with moped=no
+    const mopedNoRule = mopedRules.priority.find(rule => 
+      rule.if === 'moped == no'
+    );
+    expect(mopedNoRule).toBeDefined();
+    expect(mopedNoRule.multiply_by).toBe(0);
+    
+    // Should block roads with motor_vehicle=no
+    const motorVehicleNoRule = mopedRules.priority.find(rule => 
+      rule.if === 'motor_vehicle == no'
+    );
+    expect(motorVehicleNoRule).toBeDefined();
+    expect(motorVehicleNoRule.multiply_by).toBe(0);
+    
+    // Should block roads with vehicle=no
+    const vehicleNoRule = mopedRules.priority.find(rule => 
+      rule.if === 'vehicle == no'
+    );
+    expect(vehicleNoRule).toBeDefined();
+    expect(vehicleNoRule.multiply_by).toBe(0);
+    
+    // Should block roads with max_speed > 45
+    const maxSpeedRule = mopedRules.priority.find(rule => 
+      rule.if === 'max_speed > 45'
+    );
+    expect(maxSpeedRule).toBeDefined();
+    expect(maxSpeedRule.multiply_by).toBe(0);
+  });
+
+  test('should have Dutch access restrictions with distance penalties', () => {
+    const mopedRules = require('../moped-rules.json');
+    
+    // Should have distance penalties for access-restricted roads
+    const accessRestrictedRules = [
+      'moped == no',
+      'motor_vehicle == no', 
+      'vehicle == no',
+      'max_speed > 45'
+    ];
+    
+    accessRestrictedRules.forEach(restriction => {
+      const distanceRule = mopedRules.distance_influence.find(rule => 
+        rule.if === restriction
+      );
+      expect(distanceRule).toBeDefined();
+      expect(distanceRule.multiply_by).toBe(1000);
+    });
+  });
+
+  test('should have enhanced encoded values for Dutch access restrictions', () => {
+    const configContent = require('fs').readFileSync('./config.yml', 'utf8');
+    
+    // Verify that access restriction encoded values are included
+    expect(configContent).toContain('graph.encoded_values:');
+    expect(configContent).toContain('road_class');
+    expect(configContent).toContain('max_speed');
+    expect(configContent).toContain('moped');
+    expect(configContent).toContain('motor_vehicle');
+    expect(configContent).toContain('vehicle');
   });
 });
 
