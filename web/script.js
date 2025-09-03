@@ -842,6 +842,117 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- Gamification Features ---
+    
+    // Mood selector functionality
+    const moodOptions = document.querySelectorAll('.mood-option');
+    const userAvatar = document.getElementById('user-avatar');
+    
+    moodOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            // Remove active class from all options
+            moodOptions.forEach(opt => opt.classList.remove('active'));
+            // Add active class to clicked option
+            option.classList.add('active');
+            // Update avatar
+            userAvatar.textContent = option.dataset.mood;
+            // Add celebration effect
+            userAvatar.style.animation = 'none';
+            setTimeout(() => {
+                userAvatar.style.animation = 'pulse 0.5s ease-in-out';
+            }, 10);
+        });
+    });
+    
+    // Community reporting functionality
+    const reportButtons = document.querySelectorAll('.report-btn');
+    const userPointsElement = document.getElementById('user-points');
+    
+    let currentPoints = 1247; // Starting points
+    
+    reportButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const reportType = button.dataset.type;
+            const pointsReward = getPointsForReport(reportType);
+            
+            // Add points
+            currentPoints += pointsReward;
+            userPointsElement.textContent = `${currentPoints.toLocaleString()} pts`;
+            
+            // Show confirmation message
+            showReportConfirmation(reportType, pointsReward);
+            
+            // Add visual feedback
+            button.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+            }, 150);
+        });
+    });
+    
+    function getPointsForReport(type) {
+        const pointsMap = {
+            'traffic': 5,
+            'police': 10,
+            'hazard': 15
+        };
+        return pointsMap[type] || 5;
+    }
+    
+    function showReportConfirmation(type, points) {
+        // Create temporary notification
+        const notification = document.createElement('div');
+        notification.className = 'report-notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                🎉 Thanks for reporting ${type}! 
+                <br>+${points} points earned!
+            </div>
+        `;
+        
+        // Style the notification
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #55efc4, #00b894);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            font-weight: bold;
+            text-align: center;
+            animation: slideInRight 0.5s ease-out;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.5s ease-in';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 500);
+        }, 3000);
+    }
+    
+    // Add CSS for notifications
+    const notificationStyles = document.createElement('style');
+    notificationStyles.textContent = `
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(notificationStyles);
+
     // Test API connection on page load
     testApiConnection();
 });

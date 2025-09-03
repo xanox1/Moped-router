@@ -15,6 +15,28 @@
     <div class="container">
         <div class="controls">
             <h1>Moped Router</h1>
+            
+            <!-- User Avatar/Mood Section -->
+            <div class="user-section">
+                <div class="avatar-container">
+                    <div class="avatar" id="user-avatar">😊</div>
+                    <div class="user-info">
+                        <span class="username">Rider #123</span>
+                        <div class="points-display">
+                            <span class="points-icon">⭐</span>
+                            <span class="points-text" id="user-points">1,247 pts</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mood-selector">
+                    <span class="mood-option" data-mood="😊">😊</span>
+                    <span class="mood-option" data-mood="😎">😎</span>
+                    <span class="mood-option" data-mood="🤠">🤠</span>
+                    <span class="mood-option" data-mood="🥳">🥳</span>
+                    <span class="mood-option" data-mood="😴">😴</span>
+                    <span class="mood-option" data-mood="🤓">🤓</span>
+                </div>
+            </div>
             <div class="input-group">
                 <label for="start">From</label>
                 <input type="text" id="start" value="" placeholder="e.g., Amsterdam Central Station or 52.3702,4.8952">
@@ -31,6 +53,25 @@
             <button id="getRouteBtn">Get Route</button>
             <button id="clearRouteBtn">Clear Route</button>
             
+            <!-- Community Reporting Section -->
+            <div class="community-section">
+                <h3>🚨 Report Road Conditions</h3>
+                <div class="report-buttons">
+                    <button class="report-btn traffic-btn" data-type="traffic">
+                        🚗 Traffic
+                        <span class="points-reward">+5 pts</span>
+                    </button>
+                    <button class="report-btn police-btn" data-type="police">
+                        👮 Police
+                        <span class="points-reward">+10 pts</span>
+                    </button>
+                    <button class="report-btn hazard-btn" data-type="hazard">
+                        ⚠️ Hazard
+                        <span class="points-reward">+15 pts</span>
+                    </button>
+                </div>
+            </div>
+            
             <div class="api-status">
                 <label>API Status:</label>
                 <span id="api-status-indicator" class="status-indicator unknown">Unknown</span>
@@ -39,6 +80,32 @@
 
             <div id="route-info"></div>
             <div id="error-message" class="error"></div>
+            
+            <!-- Achievement Section -->
+            <div class="achievements-section">
+                <h3>🏆 Recent Achievements</h3>
+                <div class="achievement-badges">
+                    <div class="badge earned" title="First Route Planned">🗺️</div>
+                    <div class="badge earned" title="Community Helper">🤝</div>
+                    <div class="badge" title="Speed Demon - 100 routes">🏎️</div>
+                    <div class="badge" title="Explorer - 10 cities">🌍</div>
+                </div>
+            </div>
+            
+            <!-- Community Stats -->
+            <div class="community-stats">
+                <h3>📊 Community Activity</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number">42</span>
+                        <span class="stat-label">Reports Today</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">1,337</span>
+                        <span class="stat-label">Active Riders</span>
+                    </div>
+                </div>
+            </div>
         </div>
         <div id="map"></div>
         
