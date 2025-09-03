@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const getRouteBtn = document.getElementById('getRouteBtn');
     const clearRouteBtn = document.getElementById('clearRouteBtn');
     const testApiBtn = document.getElementById('testApiBtn');
-    const presetRoutes = document.getElementById('presetRoutes');
     const apiStatusIndicator = document.getElementById('api-status-indicator');
     const routeInfoDiv = document.getElementById('route-info');
     const errorMessageDiv = document.getElementById('error-message');
@@ -23,30 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     L.tileLayer(TILE_URL, { attribution: MAP_ATTRIBUTION }).addTo(map);
 
     let routeLayer = L.layerGroup().addTo(map);
-
-    // --- Preset Routes Data ---
-    const presetRoutesData = {
-        'amsterdam-utrecht': {
-            start: '52.3702,4.8952',
-            end: '52.0907,5.1214',
-            name: 'Amsterdam to Utrecht'
-        },
-        'amsterdam-haarlem': {
-            start: '52.3702,4.8952', 
-            end: '52.3874,4.6462',
-            name: 'Amsterdam to Haarlem'
-        },
-        'utrecht-arnhem': {
-            start: '52.0907,5.1214',
-            end: '51.9851,5.8987',
-            name: 'Utrecht to Arnhem'
-        },
-        'address-example': {
-            start: 'Amsterdam Central Station',
-            end: 'Utrecht Centraal',
-            name: 'Address Example (Amsterdam CS to Utrecht CS)'
-        }
-    };
 
     // --- Utility Functions ---
     const isCoordinate = (input) => {
@@ -216,21 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const loadPresetRoute = () => {
-        const selectedRoute = presetRoutes.value;
-        if (selectedRoute && presetRoutesData[selectedRoute]) {
-            const route = presetRoutesData[selectedRoute];
-            startInput.value = route.start;
-            endInput.value = route.end;
-            clearRoute();
-        }
-    };
-
     // --- Event Listeners ---
     getRouteBtn.addEventListener('click', getRoute);
     clearRouteBtn.addEventListener('click', clearRoute);
     testApiBtn.addEventListener('click', testApiConnection);
-    presetRoutes.addEventListener('change', loadPresetRoute);
 
     // Test API connection on page load
     testApiConnection();

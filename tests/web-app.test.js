@@ -12,11 +12,11 @@ describe('Moped Router Web App', () => {
           <h1>Moped Router</h1>
           <div class="input-group">
             <label for="start">Start (Lat, Lon)</label>
-            <input type="text" id="start" value="52.3702,4.8952">
+            <input type="text" id="start" value="">
           </div>
           <div class="input-group">
             <label for="end">End (Lat, Lon)</label>
-            <input type="text" id="end" value="52.0907,5.1214">
+            <input type="text" id="end" value="">
           </div>
           <button id="getRouteBtn">Get Route</button>
           <div id="route-info"></div>
@@ -42,8 +42,8 @@ describe('Moped Router Web App', () => {
     
     expect(startInput).toBeTruthy();
     expect(endInput).toBeTruthy();
-    expect(startInput.value).toBe('52.3702,4.8952');
-    expect(endInput.value).toBe('52.0907,5.1214');
+    expect(startInput.value).toBe(''); // Now empty by default
+    expect(endInput.value).toBe(''); // Now empty by default
   });
 
   test('should display error when API request fails', async () => {

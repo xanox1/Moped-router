@@ -45,24 +45,6 @@ h1 {
     border-radius: 4px;
 }
 
-.preset-routes {
-    margin-bottom: 15px;
-}
-
-.preset-routes label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.preset-routes select {
-    width: 100%;
-    padding: 8px;
-    box-sizing: border-box;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
 .api-status {
     margin-bottom: 15px;
     padding: 10px;
