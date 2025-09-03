@@ -226,6 +226,129 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // --- Context Menu Functions ---
+    const contextMenu = document.getElementById('context-menu');
+    let contextMenuCoords = null;
+
+    const showContextMenu = (e) => {
+        contextMenuCoords = e.latlng;
+        contextMenu.style.display = 'block';
+        contextMenu.style.left = e.containerPoint.x + 'px';
+        contextMenu.style.top = e.containerPoint.y + 'px';
+        
+        // Prevent the menu from going off-screen
+        const rect = contextMenu.getBoundingClientRect();
+        const mapRect = document.getElementById('map').getBoundingClientRect();
+        
+        if (rect.right > mapRect.right) {
+            contextMenu.style.left = (e.containerPoint.x - rect.width) + 'px';
+        }
+        if (rect.bottom > mapRect.bottom) {
+            contextMenu.style.top = (e.containerPoint.y - rect.height) + 'px';
+        }
+    };
+
+    const hideContextMenu = () => {
+        contextMenu.style.display = 'none';
+        contextMenuCoords = null;
+    };
+
+    const reverseGeocode = async (lat, lng) => {
+        const url = new URL('https://nominatim.openstreetmap.org/reverse');
+        url.searchParams.append('lat', lat);
+        url.searchParams.append('lon', lng);
+        url.searchParams.append('format', 'json');
+        url.searchParams.append('countrycodes', 'nl');
+        
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data && data.display_name) {
+                return data.display_name;
+            } else {
+                return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            }
+        } catch (error) {
+            console.error('Reverse geocoding failed:', error);
+            return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        }
+    };
+
+    const queryFeatures = async (lat, lng) => {
+        try {
+            // Query GraphHopper for routing information at this point
+            const url = new URL('https://graphhopper.xanox.org/route');
+            url.searchParams.append('point', `${lat},${lng}`);
+            url.searchParams.append('point', `${lat + 0.001},${lng + 0.001}`); // Nearby point
+            url.searchParams.append('profile', 'moped');
+            url.searchParams.append('debug', 'true');
+            url.searchParams.append('points_encoded', 'false');
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            let info = `Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}\n`;
+            
+            if (data.paths && data.paths.length > 0) {
+                info += '\nRouting information:\n';
+                info += '- Road accessible for moped routing\n';
+                info += '- Estimated speed: 45 km/h max\n';
+                
+                if (data.info) {
+                    info += `- Routing engine: ${data.info.build_date || 'GraphHopper'}\n`;
+                }
+            } else {
+                info += '\nNo routing information available at this location';
+            }
+            
+            return info;
+        } catch (error) {
+            console.error('Feature query failed:', error);
+            return `Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}\nFeature query failed: ${error.message}`;
+        }
+    };
+
+    const handleContextMenuClick = async (action) => {
+        if (!contextMenuCoords) return;
+        
+        const lat = contextMenuCoords.lat;
+        const lng = contextMenuCoords.lng;
+        const coords = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+        
+        hideContextMenu();
+        
+        switch (action) {
+        case 'directions-from':
+            startInput.value = coords;
+            setActiveField(null);
+            break;
+            
+        case 'directions-to':
+            endInput.value = coords;
+            setActiveField(null);
+            break;
+            
+        case 'show-address':
+            try {
+                const address = await reverseGeocode(lat, lng);
+                alert(`Address:\n${address}`);
+            } catch (error) {
+                alert(`Error getting address: ${error.message}`);
+            }
+            break;
+            
+        case 'query-features':
+            try {
+                const features = await queryFeatures(lat, lng);
+                alert(`Feature Information:\n${features}`);
+            } catch (error) {
+                alert(`Error querying features: ${error.message}`);
+            }
+            break;
+        }
+    };
+
     // --- Event Listeners ---
     getRouteBtn.addEventListener('click', getRoute);
     clearRouteBtn.addEventListener('click', clearRoute);
@@ -234,14 +357,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // Map click event for setting coordinates
     map.on('click', handleMapClick);
     
+    // Map right-click event for context menu
+    map.on('contextmenu', showContextMenu);
+    
     // Input field click events for map clicking mode
     startInput.addEventListener('click', () => handleFieldClick(startInput));
     endInput.addEventListener('click', () => handleFieldClick(endInput));
     
-    // Escape key to deactivate field selection
+    // Context menu item click events
+    contextMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = e.target.closest('.context-menu-item')?.dataset.action;
+        if (action) {
+            handleContextMenuClick(action);
+        }
+    });
+    
+    // Hide context menu when clicking elsewhere
+    document.addEventListener('click', hideContextMenu);
+    
+    // Escape key to deactivate field selection and hide context menu
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             setActiveField(null);
+            hideContextMenu();
         }
     });
 
