@@ -102,8 +102,29 @@ document.addEventListener('DOMContentLoaded', () => {
             url.searchParams.append('point', resolvedStart);
             url.searchParams.append('point', resolvedEnd);
             url.searchParams.append('profile', 'moped');
-            url.searchParams.append('optimize', routeType);
             url.searchParams.append('points_encoded', 'false'); // We want GeoJSON coordinates
+            
+            // Configure routing algorithm based on route type
+            if (routeType === 'shortest') {
+                url.searchParams.append('algorithm', 'astar');
+                url.searchParams.append('weighting', 'shortest');
+            } else if (routeType === 'fastest') {
+                url.searchParams.append('algorithm', 'dijkstra');
+                url.searchParams.append('weighting', 'fastest');
+            } else if (routeType === 'energy_efficient') {
+                // For energy efficient routing, use custom model with preferences for smoother roads
+                url.searchParams.append('algorithm', 'dijkstra');
+                url.searchParams.append('ch.disable', 'true');
+                url.searchParams.append('custom_model.priority[0].if', 'road_class == RESIDENTIAL || road_class == CYCLEWAY');
+                url.searchParams.append('custom_model.priority[0].multiply_by', '1.5');
+                url.searchParams.append('custom_model.priority[1].if', 'road_class == SECONDARY || road_class == TERTIARY');
+                url.searchParams.append('custom_model.priority[1].multiply_by', '1.2');
+                url.searchParams.append('custom_model.distance_influence[0].if', 'true');
+                url.searchParams.append('custom_model.distance_influence[0].multiply_by', '0.7');
+            }
+            
+            // Disable CH for custom profiles to ensure our custom model rules apply
+            url.searchParams.append('ch.disable', 'true');
 
             const response = await fetch(url);
             const data = await response.json();
@@ -150,7 +171,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayRouteInfo = (distance, time, routeType) => {
         const distanceKm = (distance / 1000).toFixed(2);
         const durationMinutes = Math.round(time / 1000 / 60);
-        const routeTypeLabel = routeType === 'fastest' ? 'Fastest Route' : 'Shortest Route';
+        
+        let routeTypeLabel;
+        switch (routeType) {
+        case 'fastest':
+            routeTypeLabel = 'Fastest Route';
+            break;
+        case 'shortest':
+            routeTypeLabel = 'Shortest Route';
+            break;
+        case 'energy_efficient':
+            routeTypeLabel = 'Energy Efficient Route';
+            break;
+        default:
+            routeTypeLabel = 'Route';
+        }
         
         routeInfoDiv.innerHTML = `
             <strong>Route Type:</strong> ${routeTypeLabel}<br>
