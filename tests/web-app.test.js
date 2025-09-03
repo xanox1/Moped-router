@@ -115,3 +115,25 @@ describe('Geocoding Functionality', () => {
     expect(url.toString()).toContain('countrycodes=nl');
   });
 });
+
+describe('Map Click Functionality', () => {
+  test('should have activeInputField variable defined', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('let activeInputField = null');
+  });
+
+  test('should have map click handler function defined', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('const handleMapClick');
+  });
+
+  test('should have field click handler function defined', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('const handleFieldClick');
+  });
+
+  test('should have CSS class for active field styling', () => {
+    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
+    expect(styleContent).toContain('.map-click-active');
+  });
+});

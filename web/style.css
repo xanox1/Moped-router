@@ -43,6 +43,21 @@ h1 {
     box-sizing: border-box;
     border: 1px solid #ccc;
     border-radius: 4px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-group input.map-click-active {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    background-color: #f0f8ff;
+}
+
+.field-hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-style: italic;
 }
 
 .api-status {

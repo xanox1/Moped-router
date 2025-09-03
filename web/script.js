@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let routeLayer = L.layerGroup().addTo(map);
 
+    // --- Map Click State ---
+    let activeInputField = null; // Track which input field is active for map clicking
+
     // --- Utility Functions ---
     const isCoordinate = (input) => {
         // Check if input matches lat,lon format (e.g., "52.3702,4.8952")
@@ -100,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const path = data.paths[0];
             drawRoute(path.points.coordinates);
-            displayRouteInfo(path.distance, path.time, resolvedStart, resolvedEnd);
+            displayRouteInfo(path.distance, path.time);
 
         } catch (error) {
             console.error('Error fetching route:', error);
@@ -127,14 +130,12 @@ document.addEventListener('DOMContentLoaded', () => {
         map.fitBounds(polyline.getBounds().pad(0.1));
     };
 
-    const displayRouteInfo = (distance, time, startCoords, endCoords) => {
+    const displayRouteInfo = (distance, time) => {
         const distanceKm = (distance / 1000).toFixed(2);
         const durationMinutes = Math.round(time / 1000 / 60);
         routeInfoDiv.innerHTML = `
             <strong>Distance:</strong> ${distanceKm} km<br>
-            <strong>Time:</strong> ${durationMinutes} minutes<br>
-            <small><strong>Start:</strong> ${startCoords}<br>
-            <strong>End:</strong> ${endCoords}</small>
+            <strong>Time:</strong> ${durationMinutes} minutes
         `;
     };
     
@@ -191,10 +192,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // --- Map Click Functions ---
+    const setActiveField = (field) => {
+        // Clear previous active state
+        startInput.classList.remove('map-click-active');
+        endInput.classList.remove('map-click-active');
+        
+        // Set new active field
+        activeInputField = field;
+        if (field) {
+            field.classList.add('map-click-active');
+        }
+    };
+
+    const handleMapClick = (e) => {
+        if (activeInputField) {
+            const lat = e.latlng.lat.toFixed(6);
+            const lng = e.latlng.lng.toFixed(6);
+            activeInputField.value = `${lat},${lng}`;
+            
+            // Clear active state after setting coordinates
+            setActiveField(null);
+        }
+    };
+
+    const handleFieldClick = (field) => {
+        if (activeInputField === field) {
+            // If clicking the same field, deactivate it
+            setActiveField(null);
+        } else {
+            // Activate the clicked field
+            setActiveField(field);
+        }
+    };
+
     // --- Event Listeners ---
     getRouteBtn.addEventListener('click', getRoute);
     clearRouteBtn.addEventListener('click', clearRoute);
     testApiBtn.addEventListener('click', testApiConnection);
+    
+    // Map click event for setting coordinates
+    map.on('click', handleMapClick);
+    
+    // Input field click events for map clicking mode
+    startInput.addEventListener('click', () => handleFieldClick(startInput));
+    endInput.addEventListener('click', () => handleFieldClick(endInput));
+    
+    // Escape key to deactivate field selection
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            setActiveField(null);
+        }
+    });
 
     // Test API connection on page load
     testApiConnection();
