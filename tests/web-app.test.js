@@ -371,6 +371,109 @@ describe('Moped Routing Rules', () => {
     expect(configContent).toContain('moped');
     expect(configContent).toContain('motor_vehicle');
     expect(configContent).toContain('vehicle');
+    expect(configContent).toContain('traffic_sign');
+    expect(configContent).toContain('zone_maxspeed');
+    expect(configContent).toContain('cycleway_moped');
+  });
+});
+
+describe('Dutch Traffic Signs Support', () => {
+  test('should block roads with Dutch traffic signs prohibiting mopeds', () => {
+    const mopedRules = require('../moped-rules.json');
+    
+    // Should block roads with NL:C5 (moped prohibited)
+    const c5Rule = mopedRules.priority.find(rule => 
+      rule.if === "traffic_sign == 'NL:C5'"
+    );
+    expect(c5Rule).toBeDefined();
+    expect(c5Rule.multiply_by).toBe(0);
+    
+    // Should block roads with NL:C2 (motor vehicles prohibited)
+    const c2Rule = mopedRules.priority.find(rule => 
+      rule.if === "traffic_sign == 'NL:C2'"
+    );
+    expect(c2Rule).toBeDefined();
+    expect(c2Rule.multiply_by).toBe(0);
+    
+    // Should block roads with NL:C7 (all vehicles prohibited)
+    const c7Rule = mopedRules.priority.find(rule => 
+      rule.if === "traffic_sign == 'NL:C7'"
+    );
+    expect(c7Rule).toBeDefined();
+    expect(c7Rule.multiply_by).toBe(0);
+  });
+
+  test('should prefer moped-designated infrastructure', () => {
+    const mopedRules = require('../moped-rules.json');
+    
+    // Should prefer designated moped paths
+    const designatedRule = mopedRules.priority.find(rule => 
+      rule.if === "cycleway_moped == designated || traffic_sign == 'NL:G12a'"
+    );
+    expect(designatedRule).toBeDefined();
+    expect(designatedRule.multiply_by).toBe('1.5');
+    
+    // Should prefer cycleways with moped access
+    const cyclewayRule = mopedRules.priority.find(rule => 
+      rule.if === 'cycleway_moped == yes'
+    );
+    expect(cyclewayRule).toBeDefined();
+    expect(cyclewayRule.multiply_by).toBe('1.2');
+  });
+
+  test('should support zone-based speed restrictions', () => {
+    const mopedRules = require('../moped-rules.json');
+    
+    // Should block roads with zone speed > 45 km/h
+    const zoneSpeedRule = mopedRules.priority.find(rule => 
+      rule.if === 'zone_maxspeed > 45'
+    );
+    expect(zoneSpeedRule).toBeDefined();
+    expect(zoneSpeedRule.multiply_by).toBe(0);
+    
+    // Should respect zone speed limits
+    const zoneSpeedLimitRule = mopedRules.speed.find(rule => 
+      rule.if === 'zone_maxspeed > 0 && zone_maxspeed < 45'
+    );
+    expect(zoneSpeedLimitRule).toBeDefined();
+    expect(zoneSpeedLimitRule.limit_to).toBe('zone_maxspeed');
+  });
+
+  test('should include Dutch traffic sign blocking in web requests', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    
+    // Should include Dutch prohibition signs
+    expect(scriptContent).toContain("'NL:C5'");
+    expect(scriptContent).toContain("'NL:C2'");
+    expect(scriptContent).toContain("'NL:C7'");
+    expect(scriptContent).toContain("'NL:C1'");
+    expect(scriptContent).toContain("'NL:C12'");
+    
+    // Should include zone speed restrictions
+    expect(scriptContent).toContain('zone_maxspeed > 45');
+    
+    // Should include moped infrastructure preferences
+    expect(scriptContent).toContain('cycleway_moped == designated');
+    expect(scriptContent).toContain("'NL:G12a'");
+  });
+
+  test('should have traffic sign description functions', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    
+    expect(scriptContent).toContain('getTrafficSignDescription');
+    expect(scriptContent).toContain('isMopedRelevantSign');
+    expect(scriptContent).toContain('Gesloten voor bromfietsen');
+    expect(scriptContent).toContain('Fiets/bromfietspad');
+  });
+
+  test('should query traffic signs in Overpass API', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    
+    // Should query for Dutch traffic signs
+    expect(scriptContent).toContain('[traffic_sign~"NL:"]');
+    expect(scriptContent).toContain('[zone:maxspeed]');
+    expect(scriptContent).toContain('[zone:traffic_sign~"NL:"]');
+    expect(scriptContent).toContain('[cycleway:moped]');
   });
 });
 
