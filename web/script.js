@@ -72,6 +72,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const getRoute = async () => {
         const startPoint = startInput.value;
         const endPoint = endInput.value;
+        
+        // Get selected route type
+        const routeTypeRadio = document.querySelector('input[name="routeType"]:checked');
+        const routeType = routeTypeRadio ? routeTypeRadio.value : 'fastest';
 
         // Clear previous state
         if (routeLayer) {
@@ -98,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             url.searchParams.append('point', resolvedStart);
             url.searchParams.append('point', resolvedEnd);
             url.searchParams.append('profile', 'moped');
+            url.searchParams.append('optimize', routeType);
             url.searchParams.append('points_encoded', 'false'); // We want GeoJSON coordinates
 
             const response = await fetch(url);
@@ -110,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const path = data.paths[0];
             drawRoute(path.points.coordinates);
-            displayRouteInfo(path.distance, path.time);
+            displayRouteInfo(path.distance, path.time, routeType);
 
         } catch (error) {
             console.error('Error fetching route:', error);
@@ -142,10 +147,13 @@ document.addEventListener('DOMContentLoaded', () => {
         map.fitBounds(polyline.getBounds().pad(0.1));
     };
 
-    const displayRouteInfo = (distance, time) => {
+    const displayRouteInfo = (distance, time, routeType) => {
         const distanceKm = (distance / 1000).toFixed(2);
         const durationMinutes = Math.round(time / 1000 / 60);
+        const routeTypeLabel = routeType === 'fastest' ? 'Fastest Route' : 'Shortest Route';
+        
         routeInfoDiv.innerHTML = `
+            <strong>Route Type:</strong> ${routeTypeLabel}<br>
             <strong>Distance:</strong> ${distanceKm} km<br>
             <strong>Time:</strong> ${durationMinutes} minutes
         `;

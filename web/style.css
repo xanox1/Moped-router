@@ -60,6 +60,47 @@ h1 {
     font-style: italic;
 }
 
+.route-type-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: flex-start;
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    transition: background-color 0.2s, border-color 0.2s;
+    cursor: pointer;
+}
+
+.radio-option:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.radio-option input[type="radio"] {
+    margin-right: 8px;
+    margin-top: 2px;
+}
+
+.radio-option .radio-label {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.radio-option .option-hint {
+    display: block;
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-style: italic;
+    margin-left: 20px;
+    margin-top: 2px;
+}
+
 .api-status {
     margin-bottom: 15px;
     padding: 10px;
