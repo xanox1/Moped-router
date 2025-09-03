@@ -87,17 +87,24 @@ describe('Moped Router Web App', () => {
     url.searchParams.append('point', endPoint);
     url.searchParams.append('profile', 'moped');
     url.searchParams.append('points_encoded', 'false');
-    url.searchParams.append('algorithm', 'dijkstra');
     url.searchParams.append('ch.disable', 'true');
-    url.searchParams.append('custom_model.priority[0].if', 'road_class == SECONDARY || road_class == TERTIARY');
-    url.searchParams.append('custom_model.priority[0].multiply_by', '1.3');
-    url.searchParams.append('custom_model.distance_influence[0].if', 'true');
-    url.searchParams.append('custom_model.distance_influence[0].multiply_by', '0.5');
+    // PRIMARY road blocking rules (always first)
+    url.searchParams.append('custom_model.priority[0].if', 'road_class == PRIMARY');
+    url.searchParams.append('custom_model.priority[0].multiply_by', '0');
+    url.searchParams.append('custom_model.distance_influence[0].if', 'road_class == PRIMARY');
+    url.searchParams.append('custom_model.distance_influence[0].multiply_by', '1000');
+    // Route type specific rules
+    url.searchParams.append('algorithm', 'dijkstra');
+    url.searchParams.append('custom_model.priority[1].if', 'road_class == SECONDARY || road_class == TERTIARY');
+    url.searchParams.append('custom_model.priority[1].multiply_by', '1.3');
+    url.searchParams.append('custom_model.distance_influence[1].if', 'true');
+    url.searchParams.append('custom_model.distance_influence[1].multiply_by', '0.5');
 
     expect(url.toString()).toContain('algorithm=dijkstra');
     expect(url.toString()).toContain('ch.disable=true');
     expect(url.toString()).toContain('custom_model.priority');
     expect(url.toString()).toContain('custom_model.distance_influence');
+    expect(url.toString()).toContain('road_class+%3D%3D+PRIMARY'); // URL encoded "road_class == PRIMARY"
   });
 
   test('should include correct parameters for shortest route', () => {
@@ -111,35 +118,51 @@ describe('Moped Router Web App', () => {
     url.searchParams.append('point', endPoint);
     url.searchParams.append('profile', 'moped');
     url.searchParams.append('points_encoded', 'false');
-    url.searchParams.append('algorithm', 'astar');
     url.searchParams.append('ch.disable', 'true');
-    url.searchParams.append('custom_model.distance_influence[0].if', 'true');
-    url.searchParams.append('custom_model.distance_influence[0].multiply_by', '2.0');
+    // PRIMARY road blocking rules (always first)
+    url.searchParams.append('custom_model.priority[0].if', 'road_class == PRIMARY');
+    url.searchParams.append('custom_model.priority[0].multiply_by', '0');
+    url.searchParams.append('custom_model.distance_influence[0].if', 'road_class == PRIMARY');
+    url.searchParams.append('custom_model.distance_influence[0].multiply_by', '1000');
+    // Route type specific rules
+    url.searchParams.append('algorithm', 'astar');
+    url.searchParams.append('custom_model.distance_influence[1].if', 'true');
+    url.searchParams.append('custom_model.distance_influence[1].multiply_by', '2.0');
 
     expect(url.toString()).toContain('algorithm=astar');
     expect(url.toString()).toContain('ch.disable=true');
     expect(url.toString()).toContain('custom_model.distance_influence');
+    expect(url.toString()).toContain('road_class+%3D%3D+PRIMARY'); // URL encoded "road_class == PRIMARY"
   });
 
-  test('should include correct parameters for energy efficient route', () => {
+  test('should always include PRIMARY road blocking rules for all route types', () => {
     const baseUrl = 'https://graphhopper.xanox.org/route';
-    const startPoint = '52.3702,4.8952';
-    const endPoint = '52.0907,5.1214';
-    const routeType = 'energy_efficient';
+    const startPoint = '53.186255,5.796779'; // Verlengde Schrans coordinates from issue
+    const endPoint = '53.185786,5.796801';
     
-    const url = new URL(baseUrl);
-    url.searchParams.append('point', startPoint);
-    url.searchParams.append('point', endPoint);
-    url.searchParams.append('profile', 'moped');
-    url.searchParams.append('points_encoded', 'false');
-    url.searchParams.append('algorithm', 'dijkstra');
-    url.searchParams.append('ch.disable', 'true');
-    url.searchParams.append('custom_model.priority[0].if', 'road_class == RESIDENTIAL || road_class == CYCLEWAY');
-    url.searchParams.append('custom_model.priority[0].multiply_by', '1.5');
-
-    expect(url.toString()).toContain('algorithm=dijkstra');
-    expect(url.toString()).toContain('ch.disable=true');
-    expect(url.toString()).toContain('custom_model.priority');
+    // Test all route types to ensure PRIMARY road blocking is always included
+    const routeTypes = ['fastest', 'shortest', 'energy_efficient'];
+    
+    routeTypes.forEach(routeType => {
+      const url = new URL(baseUrl);
+      url.searchParams.append('point', startPoint);
+      url.searchParams.append('point', endPoint);
+      url.searchParams.append('profile', 'moped');
+      url.searchParams.append('points_encoded', 'false');
+      url.searchParams.append('ch.disable', 'true');
+      
+      // PRIMARY road blocking rules - MUST be included for all route types
+      url.searchParams.append('custom_model.priority[0].if', 'road_class == PRIMARY');
+      url.searchParams.append('custom_model.priority[0].multiply_by', '0');
+      url.searchParams.append('custom_model.distance_influence[0].if', 'road_class == PRIMARY');
+      url.searchParams.append('custom_model.distance_influence[0].multiply_by', '1000');
+      
+      // All URLs must contain PRIMARY road blocking rules
+      expect(url.toString()).toContain('custom_model.priority%5B0%5D.if=road_class+%3D%3D+PRIMARY');
+      expect(url.toString()).toContain('custom_model.priority%5B0%5D.multiply_by=0');
+      expect(url.toString()).toContain('custom_model.distance_influence%5B0%5D.if=road_class+%3D%3D+PRIMARY');
+      expect(url.toString()).toContain('custom_model.distance_influence%5B0%5D.multiply_by=1000');
+    });
   });
 });
 
