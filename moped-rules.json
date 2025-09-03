@@ -9,6 +9,10 @@
     {
       "if": "road_class == MOTORWAY || road_class == TRUNK",
       "multiply_by": "0.1"
+    },
+    {
+      "if": "road_class == PRIMARY",
+      "multiply_by": "0.0"
     }
   ]
 }
