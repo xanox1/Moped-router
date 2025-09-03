@@ -16,12 +16,12 @@
         <div class="controls">
             <h1>Moped Router</h1>
             <div class="input-group">
-                <label for="start">Start (Lat, Lon)</label>
-                <input type="text" id="start" value="52.3702,4.8952">
+                <label for="start">Start (Address or Lat,Lon)</label>
+                <input type="text" id="start" value="52.3702,4.8952" placeholder="e.g., Amsterdam Central Station or 52.3702,4.8952">
             </div>
             <div class="input-group">
-                <label for="end">End (Lat, Lon)</label>
-                <input type="text" id="end" value="52.0907,5.1214">
+                <label for="end">End (Address or Lat,Lon)</label>
+                <input type="text" id="end" value="52.0907,5.1214" placeholder="e.g., Utrecht Centraal or 52.0907,5.1214">
             </div>
             
             <div class="preset-routes">
@@ -31,6 +31,7 @@
                     <option value="amsterdam-utrecht">Amsterdam to Utrecht</option>
                     <option value="amsterdam-haarlem">Amsterdam to Haarlem</option>
                     <option value="utrecht-arnhem">Utrecht to Arnhem</option>
+                    <option value="address-example">Address Example (Amsterdam CS to Utrecht CS)</option>
                 </select>
             </div>
 
