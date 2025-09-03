@@ -116,6 +116,46 @@ describe('Geocoding Functionality', () => {
   });
 });
 
+describe('Moped Routing Rules', () => {
+  test('should block PRIMARY roads (N roads) for moped routing', () => {
+    const mopedRules = require('../moped-rules.json');
+    
+    // Should have priority rules
+    expect(mopedRules.priority).toBeDefined();
+    expect(Array.isArray(mopedRules.priority)).toBe(true);
+    
+    // Should have a rule that blocks PRIMARY roads (N roads) 
+    const primaryRoadRule = mopedRules.priority.find(rule => 
+      rule.if === 'road_class == PRIMARY'
+    );
+    expect(primaryRoadRule).toBeDefined();
+    expect(primaryRoadRule.multiply_by).toBe('0.0');
+  });
+
+  test('should have reduced priority for MOTORWAY and TRUNK roads', () => {
+    const mopedRules = require('../moped-rules.json');
+    
+    const motorwayTrunkRule = mopedRules.priority.find(rule => 
+      rule.if === 'road_class == MOTORWAY || road_class == TRUNK'
+    );
+    expect(motorwayTrunkRule).toBeDefined();
+    expect(motorwayTrunkRule.multiply_by).toBe('0.1');
+  });
+
+  test('should have speed limit of 45 km/h for all roads', () => {
+    const mopedRules = require('../moped-rules.json');
+    
+    expect(mopedRules.speed).toBeDefined();
+    expect(Array.isArray(mopedRules.speed)).toBe(true);
+    
+    const speedRule = mopedRules.speed.find(rule => 
+      rule.if === 'true'
+    );
+    expect(speedRule).toBeDefined();
+    expect(speedRule.limit_to).toBe('45');
+  });
+});
+
 describe('Map Click Functionality', () => {
   test('should have activeInputField variable defined', () => {
     const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
