@@ -75,6 +75,38 @@ describe('Moped Router Web App', () => {
     expect(url.toString()).toContain('profile=moped');
     expect(url.toString()).toContain('points_encoded=false');
   });
+
+  test('should include optimize parameter for fastest route', () => {
+    const baseUrl = 'https://graphhopper.xanox.org/route';
+    const startPoint = '52.3702,4.8952';
+    const endPoint = '52.0907,5.1214';
+    const routeType = 'fastest';
+    
+    const url = new URL(baseUrl);
+    url.searchParams.append('point', startPoint);
+    url.searchParams.append('point', endPoint);
+    url.searchParams.append('profile', 'moped');
+    url.searchParams.append('optimize', routeType);
+    url.searchParams.append('points_encoded', 'false');
+
+    expect(url.toString()).toContain('optimize=fastest');
+  });
+
+  test('should include optimize parameter for shortest route', () => {
+    const baseUrl = 'https://graphhopper.xanox.org/route';
+    const startPoint = '52.3702,4.8952';
+    const endPoint = '52.0907,5.1214';
+    const routeType = 'shortest';
+    
+    const url = new URL(baseUrl);
+    url.searchParams.append('point', startPoint);
+    url.searchParams.append('point', endPoint);
+    url.searchParams.append('profile', 'moped');
+    url.searchParams.append('optimize', routeType);
+    url.searchParams.append('points_encoded', 'false');
+
+    expect(url.toString()).toContain('optimize=shortest');
+  });
 });
 
 describe('Geocoding Functionality', () => {
@@ -206,6 +238,31 @@ describe('Map Click Functionality', () => {
   test('should have CSS class for active field styling', () => {
     const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
     expect(styleContent).toContain('.map-click-active');
+  });
+});
+
+describe('Route Type Selection', () => {
+  test('should have route type radio buttons in HTML', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('name="routeType"');
+    expect(htmlContent).toContain('value="fastest"');
+    expect(htmlContent).toContain('value="shortest"');
+    expect(htmlContent).toContain('Fastest Route');
+    expect(htmlContent).toContain('Shortest Route');
+    expect(htmlContent).toContain('Prefers longer stretches with fewer turns');
+    expect(htmlContent).toContain('Minimizes total distance');
+  });
+
+  test('should have route type selection CSS styling', () => {
+    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
+    expect(styleContent).toContain('.route-type-selection');
+    expect(styleContent).toContain('.radio-option');
+    expect(styleContent).toContain('.option-hint');
+  });
+
+  test('should have fastest route selected by default', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('value="fastest" checked');
   });
 });
 
