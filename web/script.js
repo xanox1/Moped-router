@@ -47,6 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let startPointMarker = null; // Track individual start point marker
     let endPointMarker = null; // Track individual end point marker
 
+    // --- GPS State ---
+    let currentPosition = null; // Store current GPS position
+    let watchPositionId = null; // Store watch position ID for cleanup
+    let gpsEnabled = false; // Track GPS availability
+
     // --- Utility Functions ---
     const isCoordinate = (input) => {
         // Check if input matches lat,lon format (e.g., "52.3702,4.8952")
@@ -79,9 +84,153 @@ document.addEventListener('DOMContentLoaded', () => {
     const resolveLocation = async (input) => {
         if (isCoordinate(input)) {
             return input;
+        } else if (input === 'Current Location' && currentPosition) {
+            // Use stored GPS position
+            return `${currentPosition.coords.latitude},${currentPosition.coords.longitude}`;
+        } else if (input === 'Current Location') {
+            // Try to get current GPS position
+            try {
+                const position = await getCurrentPosition();
+                return `${position.coords.latitude},${position.coords.longitude}`;
+            } catch (error) {
+                throw new Error('GPS location not available. Please enter an address or coordinates.');
+            }
         } else {
             return await geocodeAddress(input);
         }
+    };
+
+    // --- GPS Functions ---
+    const getCurrentPosition = () => {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                reject(new Error('Geolocation not supported by this browser'));
+                return;
+            }
+
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 10000, // 10 seconds
+                maximumAge: 60000 // Accept 1 minute old position
+            };
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    currentPosition = position;
+                    gpsEnabled = true;
+                    resolve(position);
+                },
+                (error) => {
+                    let errorMessage;
+                    switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = 'GPS access denied by user';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = 'GPS position unavailable';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = 'GPS request timed out';
+                        break;
+                    default:
+                        errorMessage = 'Unknown GPS error';
+                        break;
+                    }
+                    gpsEnabled = false;
+                    reject(new Error(errorMessage));
+                },
+                options
+            );
+        });
+    };
+
+    const startWatchingPosition = () => {
+        if (!navigator.geolocation || watchPositionId) {
+            return;
+        }
+
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 30000
+        };
+
+        watchPositionId = navigator.geolocation.watchPosition(
+            (position) => {
+                currentPosition = position;
+                gpsEnabled = true;
+                // Update GPS dot position during navigation
+                if (isNavigating && gpsDot) {
+                    updateGpsPosition(position);
+                }
+            },
+            (error) => {
+                console.warn('GPS watch error:', error.message);
+                gpsEnabled = false;
+            },
+            options
+        );
+    };
+
+    const stopWatchingPosition = () => {
+        if (watchPositionId) {
+            navigator.geolocation.clearWatch(watchPositionId);
+            watchPositionId = null;
+        }
+    };
+
+    const updateGpsPosition = (position) => {
+        if (!map || !gpsDot) return;
+
+        // Convert GPS coordinates to screen position
+        const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
+        const point = map.latLngToContainerPoint(latLng);
+        
+        // Show GPS dot if not visible
+        if (!gpsDot.classList.contains('visible')) {
+            gpsDot.classList.add('visible');
+            gpsDot.style.display = 'block';
+        }
+        
+        // Update GPS dot position
+        gpsDot.style.top = `${point.y}px`;
+        gpsDot.style.left = `${point.x}px`;
+    };
+
+    const showGpsStatus = (message, isError = false) => {
+        // Create or update GPS status notification
+        let gpsNotification = document.getElementById('gps-status-notification');
+        if (!gpsNotification) {
+            gpsNotification = document.createElement('div');
+            gpsNotification.id = 'gps-status-notification';
+            gpsNotification.className = 'gps-status-notification';
+            document.body.appendChild(gpsNotification);
+        }
+
+        gpsNotification.className = `gps-status-notification ${isError ? 'error' : 'success'}`;
+        gpsNotification.innerHTML = `
+            <div class="gps-notification-content">
+                <span class="gps-notification-icon">${isError ? '📍❌' : '📍✅'}</span>
+                <div class="gps-notification-text">
+                    <strong>${isError ? 'GPS Error' : 'GPS Active'}</strong>
+                    <br>
+                    <small>${message}</small>
+                </div>
+            </div>
+        `;
+
+        // Show notification
+        setTimeout(() => gpsNotification.classList.add('show'), 100);
+
+        // Hide after 3 seconds
+        setTimeout(() => {
+            gpsNotification.classList.remove('show');
+            setTimeout(() => {
+                if (gpsNotification.parentNode) {
+                    document.body.removeChild(gpsNotification);
+                }
+            }, 300);
+        }, 3000);
     };
 
     // Dutch traffic sign descriptions for moped routing
@@ -1525,8 +1674,69 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Input field click events for map clicking mode
-    startInput.addEventListener('click', () => handleFieldClick(startInput));
+    startInput.addEventListener('click', () => {
+        // Special handling for "Current Location"
+        if (startInput.value === 'Current Location') {
+            handleCurrentLocationClick();
+        } else {
+            handleFieldClick(startInput);
+        }
+    });
+    
     endInput.addEventListener('click', () => handleFieldClick(endInput));
+
+    // Handle Current Location functionality
+    const handleCurrentLocationClick = async () => {
+        startInput.value = '📍 Getting your location...';
+        startInput.disabled = true;
+        
+        try {
+            const position = await getCurrentPosition();
+            const lat = position.coords.latitude.toFixed(6);
+            const lng = position.coords.longitude.toFixed(6);
+            
+            // Try to get address for better UX
+            try {
+                const address = await reverseGeocode(lat, lng);
+                startInput.value = address;
+                showGpsStatus(`Located at: ${address}`);
+            } catch (geocodeError) {
+                // Fallback to coordinates if reverse geocoding fails
+                startInput.value = `${lat}, ${lng}`;
+                showGpsStatus(`Located at: ${lat}, ${lng}`);
+            }
+            
+            // Place marker for current location
+            if (startPointMarker) {
+                map.removeLayer(startPointMarker);
+                startPointMarker = null;
+            }
+            
+            if (map) {
+                const marker = createPointMarker(parseFloat(lat), parseFloat(lng), true);
+                if (marker) {
+                    startPointMarker = marker;
+                    // Center map on current location
+                    map.setView([parseFloat(lat), parseFloat(lng)], Math.max(map.getZoom(), 14));
+                }
+            }
+            
+            // Auto-route if end point is set
+            const endValue = endInput.value.trim();
+            if (endValue && endValue !== 'Where to?' && endValue !== '') {
+                setTimeout(() => {
+                    getRoute();
+                }, 1000);
+            }
+            
+        } catch (error) {
+            console.error('GPS error:', error);
+            startInput.value = 'Current Location';
+            showGpsStatus(error.message, true);
+        } finally {
+            startInput.disabled = false;
+        }
+    };
     
     // Map select button click events
     document.getElementById('start-select-btn').addEventListener('click', () => handleFieldClick(startInput));
@@ -1982,6 +2192,9 @@ document.addEventListener('DOMContentLoaded', () => {
         updateNavHeader();
         isNavigating = true;
         
+        // Start GPS tracking for real navigation
+        startWatchingPosition();
+        
         navigationInterval = setInterval(() => {
             currentStep++;
             if (currentStep >= mockDirections.length) {
@@ -1990,7 +2203,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 endNavigation();
             } else {
                 updateNavHeader();
-                moveGpsDot();
+                // Only use mock GPS movement if real GPS is not available
+                if (!gpsEnabled) {
+                    moveGpsDot();
+                }
             }
         }, 4000);
     }
@@ -2000,6 +2216,10 @@ document.addEventListener('DOMContentLoaded', () => {
             clearInterval(navigationInterval);
             navigationInterval = null;
         }
+        
+        // Stop GPS tracking
+        stopWatchingPosition();
+        
         if (searchHeader) searchHeader.classList.remove('-translate-y-full');
         if (bottomNav) bottomNav.classList.remove('translate-y-full');
         if (actionButtons) actionButtons.classList.remove('translate-x-full', 'opacity-0');
@@ -2009,6 +2229,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gpsDot) {
             gpsDot.style.top = '50%';
             gpsDot.style.left = '50%';
+            gpsDot.classList.remove('visible');
+            gpsDot.style.display = 'none';
         }
         isNavigating = false;
     }

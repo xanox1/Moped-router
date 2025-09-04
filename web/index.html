@@ -158,7 +158,10 @@
         <!-- Map Background -->
         <div id="map" class="absolute inset-0"></div>
 
-        <!-- Simulated GPS Dot - Removed per UI requirements -->
+        <!-- GPS Location Dot -->
+        <div id="gps-dot" class="absolute z-20 w-4 h-4 bg-blue-500 border-2 border-white rounded-full shadow-lg pointer-events-none" style="top: 50%; left: 50%; transform: translate(-50%, -50%); display: none;">
+            <div class="absolute inset-0 bg-blue-500 rounded-full animate-pulse opacity-50"></div>
+        </div>
 
         <!-- Top Search Bar -->
         <header id="search-header" class="absolute top-0 left-0 right-0 p-6 z-10 transition-transform duration-300">

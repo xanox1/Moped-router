@@ -1094,3 +1094,91 @@ button:hover,
 .cursor-pointer:hover {
     transform: translateY(-1px);
 }
+
+/* GPS Status Notification Styles */
+.gps-status-notification {
+    position: fixed;
+    top: 1.25rem;
+    left: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 0.75rem;
+    transform: translateY(-100px);
+    opacity: 0;
+    transition: all var(--transition-normal);
+    z-index: 1000;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.gps-status-notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.gps-status-notification.error {
+    background: rgba(239, 68, 68, 0.95);
+    color: white;
+}
+
+.gps-status-notification.success {
+    background: rgba(16, 185, 129, 0.95);
+    color: white;
+}
+
+.gps-notification-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.gps-notification-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.gps-notification-text {
+    flex: 1;
+    font-size: 0.875rem;
+}
+
+.gps-notification-text strong {
+    font-weight: 600;
+}
+
+.gps-notification-text small {
+    opacity: 0.9;
+    font-size: 0.75rem;
+}
+
+/* GPS Dot Styles */
+#gps-dot {
+    transition: all var(--transition-fast);
+}
+
+#gps-dot.visible {
+    display: block !important;
+}
+
+/* GPS pulse animation */
+@keyframes gps-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    70% {
+        transform: scale(2);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.animate-pulse {
+    animation: gps-pulse 2s infinite;
+}
