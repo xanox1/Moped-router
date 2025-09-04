@@ -1,4 +1,36 @@
 /* Mobile-first modern design for Moped Router */
+:root {
+    /* Design System - Consistent values */
+    --radius-sm: 0.5rem;     /* 8px - small elements */
+    --radius-md: 0.75rem;    /* 12px - medium elements */
+    --radius-lg: 1rem;       /* 16px - large elements */ 
+    --radius-xl: 1.5rem;     /* 24px - extra large elements */
+    --radius-full: 9999px;   /* full rounded */
+    
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.25);
+    
+    --spacing-xs: 0.25rem;   /* 4px */
+    --spacing-sm: 0.5rem;    /* 8px */
+    --spacing-md: 0.75rem;   /* 12px */
+    --spacing-lg: 1rem;      /* 16px */
+    --spacing-xl: 1.25rem;   /* 20px */
+    --spacing-2xl: 1.5rem;   /* 24px */
+    
+    --color-primary: #3B82F6;        /* blue-500 */
+    --color-primary-hover: #2563EB;  /* blue-600 */
+    --color-danger: #EF4444;         /* red-500 */
+    --color-danger-hover: #DC2626;   /* red-600 */
+    --color-success: #10B981;        /* emerald-500 */
+    --color-success-hover: #059669;  /* emerald-600 */
+    
+    --transition-fast: 150ms ease;
+    --transition-normal: 250ms ease;
+    --transition-slow: 350ms ease;
+}
+
 body, html {
     margin: 0;
     padding: 0;
@@ -84,6 +116,16 @@ body, html {
     -webkit-backdrop-filter: blur(8px);
 }
 
+.backdrop-blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.backdrop-blur-lg {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
 /* Custom scrollbar for modals */
 .modal-content::-webkit-scrollbar {
     width: 6px;
@@ -107,22 +149,23 @@ body, html {
 .context-menu {
     position: fixed;
     background: rgba(26, 31, 41, 0.95);
-    backdrop-filter: blur(15px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 8px 0;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm) 0;
     min-width: 180px;
     z-index: 10000;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-lg);
     color: #e4e6ea;
 }
 
 .context-menu-item {
     display: flex;
     align-items: center;
-    padding: 10px 16px;
+    padding: var(--spacing-md) var(--spacing-lg);
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color var(--transition-fast);
     font-size: 0.9rem;
 }
 
@@ -131,14 +174,14 @@ body, html {
 }
 
 .context-menu-icon {
-    margin-right: 10px;
+    margin-right: var(--spacing-md);
     font-size: 1rem;
 }
 
 .context-menu-separator {
     height: 1px;
     background-color: rgba(255, 255, 255, 0.1);
-    margin: 4px 0;
+    margin: var(--spacing-xs) 0;
 }
 
 /* Feature Modal Styles */
@@ -157,10 +200,11 @@ body, html {
 
 .feature-modal-content {
     background: rgba(36, 43, 57, 0.95);
-    backdrop-filter: blur(15px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
     max-width: 600px;
     max-height: 80vh;
     width: 90%;
@@ -171,7 +215,7 @@ body, html {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: var(--spacing-xl);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(26, 31, 41, 0.95);
 }
@@ -180,6 +224,7 @@ body, html {
     margin: 0;
     color: #ffffff;
     font-size: 1.2rem;
+    font-weight: 600;
 }
 
 .feature-modal-close {
@@ -188,16 +233,18 @@ body, html {
     color: #e4e6ea;
     cursor: pointer;
     line-height: 1;
-    padding: 0 5px;
-    transition: color 0.2s ease;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--spacing-xs);
+    transition: all var(--transition-fast);
 }
 
 .feature-modal-close:hover {
     color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .feature-modal-body {
-    padding: 20px;
+    padding: var(--spacing-xl);
     max-height: 60vh;
     overflow-y: auto;
     white-space: pre-line;
@@ -222,10 +269,11 @@ body, html {
 
 .settings-modal-content {
     background: rgba(36, 43, 57, 0.95);
-    backdrop-filter: blur(15px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
     max-width: 500px;
     max-height: 80vh;
     width: 90%;
@@ -236,7 +284,7 @@ body, html {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: var(--spacing-xl);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(26, 31, 41, 0.95);
 }
@@ -245,6 +293,7 @@ body, html {
     margin: 0;
     color: #ffffff;
     font-size: 1.2rem;
+    font-weight: 600;
 }
 
 .settings-modal-close {
@@ -253,16 +302,18 @@ body, html {
     color: #e4e6ea;
     cursor: pointer;
     line-height: 1;
-    padding: 0 5px;
-    transition: color 0.2s ease;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--spacing-xs);
+    transition: all var(--transition-fast);
 }
 
 .settings-modal-close:hover {
     color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .settings-modal-body {
-    padding: 20px;
+    padding: var(--spacing-xl);
     max-height: 60vh;
     overflow-y: auto;
     color: #e4e6ea;
@@ -270,23 +321,24 @@ body, html {
 
 .settings-modal-body h4 {
     color: #ffffff;
-    margin-bottom: 15px;
+    margin-bottom: var(--spacing-lg);
     font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .settings-options {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--spacing-md);
 }
 
 .setting-item {
     display: flex;
     align-items: center;
     cursor: pointer;
-    padding: 8px;
-    border-radius: 6px;
-    transition: background-color 0.2s ease;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
 }
 
 .setting-item:hover {
@@ -294,12 +346,13 @@ body, html {
 }
 
 .setting-item input[type="checkbox"] {
-    margin-right: 12px;
+    margin-right: var(--spacing-md);
     transform: scale(1.2);
+    cursor: pointer;
 }
 
 .checkmark {
-    margin-left: 8px;
+    margin-left: var(--spacing-sm);
 }
 
 /* Responsive design */
@@ -361,12 +414,12 @@ body, html {
     top: 70px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, #4caf50, #45a049);
+    background: linear-gradient(135deg, var(--color-success), var(--color-success-hover));
     color: white;
-    padding: 12px 20px;
-    border-radius: 8px;
-    border: 1px solid rgba(76, 175, 80, 0.4);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    box-shadow: var(--shadow-md);
     z-index: 15000;
     font-weight: 600;
     font-size: 0.9rem;
@@ -388,7 +441,7 @@ body, html {
 .map-click-status .status-content {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-sm);
 }
 
 .map-click-status .status-close {
@@ -398,30 +451,32 @@ body, html {
     font-size: 1.2rem;
     cursor: pointer;
     padding: 0;
-    margin: 0 0 0 10px;
+    margin: 0 0 0 var(--spacing-md);
     width: auto;
     line-height: 1;
-    transition: opacity 0.2s;
+    transition: opacity var(--transition-fast);
+    border-radius: var(--radius-sm);
 }
 
 .map-click-status .status-close:hover {
     opacity: 0.8;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Location notification styling */
 .location-set-notification {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    background: linear-gradient(135deg, #4caf50, #45a049);
+    top: var(--spacing-xl);
+    right: var(--spacing-xl);
+    background: linear-gradient(135deg, var(--color-success), var(--color-success-hover));
     color: white;
-    border-radius: 8px;
-    padding: 12px 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    box-shadow: var(--shadow-md);
     z-index: 15000;
     opacity: 0;
     transform: translateX(100%);
-    transition: all 0.3s ease-out;
+    transition: all var(--transition-normal);
     max-width: 300px;
 }
 
@@ -433,7 +488,7 @@ body, html {
 .location-set-notification .notification-content {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: var(--spacing-md);
 }
 
 .location-set-notification .notification-icon {
@@ -443,7 +498,8 @@ body, html {
 
 .location-set-notification .notification-text strong {
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 600;
 }
 
 .location-set-notification .notification-text small {
@@ -454,51 +510,64 @@ body, html {
 
 /* Legacy compatibility classes for tests */
 .map-click-active {
-    border-color: #4caf50;
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
-    background: rgba(76, 175, 80, 0.1);
+    border-color: var(--color-success) !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3) !important;
+    background: rgba(16, 185, 129, 0.1) !important;
     animation: pulse-green 2s infinite;
 }
 
 @keyframes pulse-green {
     0%, 100% { 
-        border-color: #4caf50;
-        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+        border-color: var(--color-success);
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
     }
     50% { 
-        border-color: #66bb6a;
-        box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.5);
+        border-color: #34d399;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.5);
     }
 }
 
 .map-select-btn {
     background: rgba(59, 130, 246, 0.1);
     border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: 6px;
-    padding: 8px;
-    margin-right: 8px;
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-sm);
+    margin-right: var(--spacing-sm);
     font-size: 1rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
+    color: var(--color-primary);
 }
 
 .map-select-btn:hover {
     background: rgba(59, 130, 246, 0.2);
     transform: scale(1.05);
+    border-color: var(--color-primary);
+}
+
+.map-select-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
 }
 
 /* Additional legacy compatibility classes */
 .input-with-button {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-sm);
 }
 
 .menu-btn {
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 8px;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+}
+
+.menu-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .hamburger-line {
@@ -507,4 +576,178 @@ body, html {
     height: 2px;
     background: #333;
     margin: 3px 0;
+    transition: all var(--transition-fast);
+    border-radius: 1px;
+}
+
+/* Enhanced input styling for better consistency */
+input[type="text"] {
+    transition: all var(--transition-fast);
+}
+
+input[type="text"]:focus {
+    outline: none;
+    transform: translateY(-1px);
+}
+
+input[type="text"]:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Improved search header styling */
+#search-header .bg-white\/90 {
+    transition: all var(--transition-normal);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#search-header .bg-white\/90:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Enhanced button styles for better interactive feedback */
+button {
+    transition: all var(--transition-fast);
+}
+
+button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* Primary action button styling */
+.bg-blue-500,
+button[class*="bg-blue-500"] {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover)) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    transition: all var(--transition-fast);
+}
+
+.bg-blue-500:hover,
+button[class*="bg-blue-500"]:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Danger button styling */
+.bg-red-500,
+button[class*="bg-red-500"] {
+    background: linear-gradient(135deg, var(--color-danger), var(--color-danger-hover)) !important;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.bg-red-500:hover,
+button[class*="bg-red-500"]:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Floating action button improvements */
+.report-option,
+#report-main-button,
+#layers-menu-button {
+    transition: all var(--transition-fast);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.report-option:hover,
+#layers-menu-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+#report-main-button:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+}
+
+/* Navigation bar enhancements */
+.nav-item {
+    transition: all var(--transition-fast);
+    border-radius: var(--radius-sm);
+}
+
+.nav-item:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.nav-item.active {
+    background-color: rgba(59, 130, 246, 0.15);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+/* Route info card enhancements */
+#route-info .bg-white\/90,
+#navigation-footer .bg-white\/90 {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all var(--transition-normal);
+}
+
+/* Card content styling improvements */
+.rounded-2xl,
+.rounded-xl {
+    border-radius: var(--radius-xl);
+}
+
+.rounded-lg {
+    border-radius: var(--radius-lg);
+}
+
+.shadow-lg {
+    box-shadow: var(--shadow-lg);
+}
+
+.shadow-xl {
+    box-shadow: var(--shadow-xl);
+}
+
+.shadow-2xl {
+    box-shadow: var(--shadow-xl);
+}
+
+/* Modal overlay improvements */
+.modal-overlay {
+    transition: opacity var(--transition-normal);
+}
+
+/* Improved focus indicators for accessibility */
+*:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Enhanced backdrop filters */
+.backdrop-blur-sm {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Typography improvements */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+/* Consistent spacing for text elements */
+p {
+    line-height: 1.5;
+}
+
+/* Icon consistency */
+svg {
+    transition: all var(--transition-fast);
+}
+
+/* Enhanced interactive states */
+[role="button"]:hover,
+button:hover,
+.cursor-pointer:hover {
+    transform: translateY(-1px);
 }
