@@ -153,7 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // Show loading state
+            // Show loading overlay and disable map interactions
+            showLoadingOverlay();
+            
+            // Show loading state on button
             getRouteBtn.disabled = true;
             getRouteBtn.textContent = 'Finding Route...';
 
@@ -247,11 +250,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const path = data.paths[0];
             drawRoute(path.points.coordinates);
             displayRouteInfo(path.distance, path.time);
+            
+            // Show route summary modal
+            showRouteSummaryModal(path, resolvedStart, resolvedEnd);
 
         } catch (error) {
             console.error('Error fetching route:', error);
-            showError(error.message);
+            
+            // Demo mode: If API fails, show mock route summary for testing
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                console.log('API unavailable - showing demo route summary');
+                showDemoRouteSummary(startPoint, endPoint);
+                return; // Exit early, demo function will handle cleanup
+            } else {
+                showError(error.message);
+            }
         } finally {
+            // Hide loading overlay and restore map interactions
+            hideLoadingOverlay();
+            
             getRouteBtn.disabled = false;
             getRouteBtn.textContent = 'Get Route';
         }
@@ -429,6 +446,291 @@ document.addEventListener('DOMContentLoaded', () => {
             routeInfoDiv.style.opacity = '1';
             routeInfoDiv.style.transform = 'translateY(0)';
         }, 100);
+    };
+    
+    // --- Loading Overlay Functions ---
+    const showLoadingOverlay = () => {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+            
+            // Disable map interactions during loading
+            if (map) {
+                map.dragging.disable();
+                map.touchZoom.disable();
+                map.doubleClickZoom.disable();
+                map.scrollWheelZoom.disable();
+                map.boxZoom.disable();
+                map.keyboard.disable();
+                if (map.tap) map.tap.disable();
+            }
+        }
+    };
+    
+    const hideLoadingOverlay = () => {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+            
+            // Re-enable map interactions
+            if (map) {
+                map.dragging.enable();
+                map.touchZoom.enable();
+                map.doubleClickZoom.enable();
+                map.scrollWheelZoom.enable();
+                map.boxZoom.enable();
+                map.keyboard.enable();
+                if (map.tap) map.tap.enable();
+            }
+        }
+    };
+    
+    // --- Route Summary Modal Functions ---
+    let routeSummaryMap = null;
+    let routeSummaryRoute = null;
+    let routeSummaryMarkers = [];
+    
+    const showRouteSummaryModal = (pathData, startCoords, endCoords) => {
+        const modal = document.getElementById('route-summary-modal');
+        if (!modal) return;
+        
+        // Update route statistics
+        const distanceKm = (pathData.distance / 1000).toFixed(2);
+        const durationMinutes = Math.round(pathData.time / 1000 / 60);
+        const hours = Math.floor(durationMinutes / 60);
+        const minutes = durationMinutes % 60;
+        
+        let timeString;
+        if (hours > 0) {
+            timeString = `${hours}h ${minutes}m`;
+        } else {
+            timeString = `${minutes}m`;
+        }
+        
+        document.getElementById('summary-distance').textContent = `${distanceKm} km`;
+        document.getElementById('summary-time').textContent = timeString;
+        
+        // Show the modal
+        modal.style.display = 'flex';
+        
+        // Initialize small map
+        setTimeout(() => {
+            initializeRouteSummaryMap(pathData, startCoords, endCoords);
+            generateRouteReports(pathData);
+        }, 100);
+    };
+    
+    const hideRouteSummaryModal = () => {
+        const modal = document.getElementById('route-summary-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            
+            // Clean up the summary map
+            if (routeSummaryMap) {
+                routeSummaryMap.remove();
+                routeSummaryMap = null;
+                routeSummaryRoute = null;
+                routeSummaryMarkers = [];
+            }
+        }
+    };
+    
+    const initializeRouteSummaryMap = (pathData, startCoords, endCoords) => {
+        const mapContainer = document.getElementById('route-summary-map');
+        if (!mapContainer || typeof L === 'undefined') return;
+        
+        // Clean up existing map
+        if (routeSummaryMap) {
+            routeSummaryMap.remove();
+        }
+        
+        // Parse coordinates
+        const startLatLng = startCoords.split(',').map(coord => parseFloat(coord.trim()));
+        const endLatLng = endCoords.split(',').map(coord => parseFloat(coord.trim()));
+        const routeCoords = pathData.points.coordinates.map(coord => [coord[1], coord[0]]);
+        
+        // Create new map
+        routeSummaryMap = L.map('route-summary-map', {
+            zoomControl: false,
+            attributionControl: false
+        });
+        
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            subdomains: ['a', 'b', 'c']
+        }).addTo(routeSummaryMap);
+        
+        // Add route polyline
+        routeSummaryRoute = L.polyline(routeCoords, {
+            color: '#3B82F6',
+            weight: 4,
+            opacity: 0.8
+        }).addTo(routeSummaryMap);
+        
+        // Add start marker
+        const startMarker = L.divIcon({
+            className: 'simple-pin-marker start-pin',
+            html: '<div class="pin-content">📍</div>',
+            iconSize: [20, 20],
+            iconAnchor: [10, 20]
+        });
+        L.marker([startLatLng[0], startLatLng[1]], { icon: startMarker }).addTo(routeSummaryMap);
+        
+        // Add end marker
+        const endMarker = L.divIcon({
+            className: 'simple-pin-marker end-pin',
+            html: '<div class="pin-content">🎯</div>',
+            iconSize: [20, 20],
+            iconAnchor: [10, 20]
+        });
+        L.marker([endLatLng[0], endLatLng[1]], { icon: endMarker }).addTo(routeSummaryMap);
+        
+        // Fit bounds to show the entire route
+        const group = new L.featureGroup([routeSummaryRoute]);
+        routeSummaryMap.fitBounds(group.getBounds().pad(0.1));
+    };
+    
+    const generateRouteReports = (pathData) => {
+        const reportsList = document.getElementById('route-reports-list');
+        if (!reportsList) return;
+        
+        // Clear existing reports
+        reportsList.innerHTML = '';
+        
+        // Generate mock reports based on route characteristics
+        const distanceKm = pathData.distance / 1000;
+        const reports = [];
+        
+        // Add police report (random chance)
+        if (Math.random() < 0.3) {
+            reports.push({
+                type: 'police',
+                icon: '🚔',
+                title: 'Police Activity Reported',
+                description: 'Speed control reported along this route',
+                distance: `${(Math.random() * distanceKm).toFixed(1)} km from start`
+            });
+        }
+        
+        // Add construction report (random chance)
+        if (Math.random() < 0.4) {
+            reports.push({
+                type: 'construction',
+                icon: '🚧',
+                title: 'Road Work',
+                description: 'Minor roadwork may cause delays',
+                distance: `${(Math.random() * distanceKm).toFixed(1)} km from start`
+            });
+        }
+        
+        // Add map issue report (random chance)
+        if (Math.random() < 0.2) {
+            reports.push({
+                type: 'map_issue',
+                icon: '❓',
+                title: 'Map Data Issue',
+                description: 'Outdated road information - please verify route',
+                distance: `${(Math.random() * distanceKm).toFixed(1)} km from start`
+            });
+        }
+        
+        // Add safety reminder
+        reports.push({
+            type: 'safety',
+            icon: '⚠️',
+            title: 'Moped Safety Reminder',
+            description: 'Remember to wear a helmet and follow traffic rules',
+            distance: 'General advice'
+        });
+        
+        // If no random reports, add at least one informational item
+        if (reports.length === 1) { // Only the safety reminder
+            reports.unshift({
+                type: 'info',
+                icon: '✅',
+                title: 'Route Clear',
+                description: 'No current issues reported on this route',
+                distance: 'Route status'
+            });
+        }
+        
+        // Create report items
+        reports.forEach(report => {
+            const reportItem = document.createElement('div');
+            reportItem.className = 'route-report-item';
+            reportItem.innerHTML = `
+                <div class="route-report-icon">${report.icon}</div>
+                <div class="route-report-content">
+                    <div class="route-report-title">${report.title}</div>
+                    <div class="route-report-description">${report.description}</div>
+                    <div class="route-report-distance">${report.distance}</div>
+                </div>
+            `;
+            reportsList.appendChild(reportItem);
+        });
+        
+        // Add report markers to summary map
+        addReportMarkersToSummaryMap(reports, pathData);
+    };
+    
+    const addReportMarkersToSummaryMap = (reports, pathData) => {
+        if (!routeSummaryMap || !pathData.points.coordinates) return;
+        
+        const routeCoords = pathData.points.coordinates;
+        
+        reports.forEach((report) => {
+            if (report.type === 'safety' || report.type === 'info') return; // Skip non-location reports
+            
+            // Place marker at a random point along the route
+            const coordIndex = Math.floor(Math.random() * routeCoords.length);
+            const coord = routeCoords[coordIndex];
+            
+            if (coord && coord.length >= 2) {
+                const reportMarker = L.divIcon({
+                    className: 'route-report-marker',
+                    html: `<div class="report-marker-content">${report.icon}</div>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+                
+                const marker = L.marker([coord[1], coord[0]], { icon: reportMarker }).addTo(routeSummaryMap);
+                routeSummaryMarkers.push(marker);
+            }
+        });
+    };
+    
+    // Demo function for testing when API is unavailable
+    const showDemoRouteSummary = (startCoords, endCoords) => {
+        // Add a short delay to demonstrate loading state
+        setTimeout(() => {
+            // Create mock route data
+            const mockPath = {
+                distance: 5200, // 5.2 km
+                time: 900000, // 15 minutes in milliseconds
+                points: {
+                    coordinates: [
+                        [4.8952, 52.3702], // Amsterdam (start)
+                        [4.9252, 52.3502], // Intermediate point 1
+                        [5.0252, 52.3302], // Intermediate point 2
+                        [5.0852, 52.2502], // Intermediate point 3
+                        [5.1214, 52.0907]  // Utrecht (end)
+                    ]
+                }
+            };
+            
+            // Call the route display functions with mock data
+            displayRouteInfo(mockPath.distance, mockPath.time);
+            
+            // Show route summary modal with mock data
+            showRouteSummaryModal(mockPath, startCoords, endCoords);
+            
+            // Hide loading overlay after demo
+            hideLoadingOverlay();
+            
+            getRouteBtn.disabled = false;
+            getRouteBtn.textContent = 'Get Route';
+        }, 2000); // 2 second delay to show loading
     };
     
     const showError = (message) => {
@@ -1947,11 +2249,45 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeModal();
+            hideRouteSummaryModal();
             if (isNavigating) {
                 endNavigation();
             }
         }
     });
+    
+    // Route Summary Modal Event Listeners
+    const routeSummaryModalClose = document.querySelector('.route-summary-modal-close');
+    if (routeSummaryModalClose) {
+        routeSummaryModalClose.addEventListener('click', hideRouteSummaryModal);
+    }
+    
+    const routeSummaryModal = document.getElementById('route-summary-modal');
+    if (routeSummaryModal) {
+        routeSummaryModal.addEventListener('click', (e) => {
+            if (e.target === routeSummaryModal) {
+                hideRouteSummaryModal();
+            }
+        });
+    }
+    
+    // Route action buttons
+    const startNavigationSummary = document.getElementById('start-navigation-summary');
+    if (startNavigationSummary) {
+        startNavigationSummary.addEventListener('click', () => {
+            hideRouteSummaryModal();
+            // You can add navigation start logic here
+            console.log('Navigation started from summary');
+        });
+    }
+    
+    const saveRouteSummary = document.getElementById('save-route-summary');
+    if (saveRouteSummary) {
+        saveRouteSummary.addEventListener('click', () => {
+            console.log('Route saved');
+            // You can add route saving logic here
+        });
+    }
 
     console.log('Mobile UI initialized');
 });

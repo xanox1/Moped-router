@@ -368,6 +368,72 @@
         </div>
     </div>
     
+    <!-- Route Summary Modal -->
+    <div id="route-summary-modal" class="route-summary-modal" style="display: none;">
+        <div class="route-summary-modal-content">
+            <div class="route-summary-modal-header">
+                <h3>🗺️ Route Summary</h3>
+                <span class="route-summary-modal-close">&times;</span>
+            </div>
+            <div class="route-summary-modal-body">
+                <div class="route-summary-info">
+                    <div class="route-basic-info">
+                        <div class="route-stat">
+                            <span class="route-stat-icon">📏</span>
+                            <div class="route-stat-content">
+                                <div class="route-stat-value" id="summary-distance">5.2 km</div>
+                                <div class="route-stat-label">Distance</div>
+                            </div>
+                        </div>
+                        <div class="route-stat">
+                            <span class="route-stat-icon">⏱️</span>
+                            <div class="route-stat-content">
+                                <div class="route-stat-value" id="summary-time">15 min</div>
+                                <div class="route-stat-label">Est. Time</div>
+                            </div>
+                        </div>
+                        <div class="route-stat">
+                            <span class="route-stat-icon">🛣️</span>
+                            <div class="route-stat-content">
+                                <div class="route-stat-value" id="summary-profile">Moped</div>
+                                <div class="route-stat-label">Profile</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route-summary-map-container">
+                    <div id="route-summary-map" class="route-summary-map"></div>
+                </div>
+                
+                <div class="route-reports-section">
+                    <h4>📋 Route Information</h4>
+                    <div id="route-reports-list" class="route-reports-list">
+                        <!-- Reports will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="route-summary-actions">
+                    <button id="start-navigation-summary" class="route-action-btn primary">
+                        <span>🧭</span> Start Navigation
+                    </button>
+                    <button id="save-route-summary" class="route-action-btn secondary">
+                        <span>💾</span> Save Route
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Calculating route...</div>
+            <div class="loading-subtext">Finding the best moped route</div>
+        </div>
+    </div>
+
     <!-- Settings Modal -->
     <div id="settings-modal" class="settings-modal" style="display: none;">
         <div class="settings-modal-content">
