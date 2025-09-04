@@ -663,3 +663,97 @@ describe('Route Element Management Fix', () => {
     expect(scriptContent).not.toContain('.addTo(routeLayer)');
   });
 });
+
+describe('Route Summary Modal Functionality', () => {
+  test('should have route summary modal HTML elements', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('id="route-summary-modal"');
+    expect(htmlContent).toContain('class="route-summary-modal"');
+    expect(htmlContent).toContain('id="route-summary-map"');
+    expect(htmlContent).toContain('id="route-reports-list"');
+    expect(htmlContent).toContain('id="start-navigation-summary"');
+    expect(htmlContent).toContain('id="save-route-summary"');
+  });
+
+  test('should have loading overlay HTML elements', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('id="loading-overlay"');
+    expect(htmlContent).toContain('class="loading-overlay"');
+    expect(htmlContent).toContain('class="loading-spinner"');
+    expect(htmlContent).toContain('Calculating route...');
+    expect(htmlContent).toContain('Finding the best moped route');
+  });
+
+  test('should have route summary modal CSS styling', () => {
+    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
+    expect(styleContent).toContain('.route-summary-modal');
+    expect(styleContent).toContain('.route-summary-modal-content');
+    expect(styleContent).toContain('.route-basic-info');
+    expect(styleContent).toContain('.route-stat');
+    expect(styleContent).toContain('.route-reports-section');
+    expect(styleContent).toContain('.route-action-btn');
+    expect(styleContent).toContain('backdrop-filter: blur');
+  });
+
+  test('should have loading overlay CSS styling', () => {
+    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
+    expect(styleContent).toContain('.loading-overlay');
+    expect(styleContent).toContain('.loading-spinner');
+    expect(styleContent).toContain('.loading-content');
+    expect(styleContent).toContain('@keyframes spin');
+    expect(styleContent).toContain('animation: spin 1s linear infinite');
+  });
+
+  test('should have route summary modal functions defined', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('showRouteSummaryModal');
+    expect(scriptContent).toContain('hideRouteSummaryModal');
+    expect(scriptContent).toContain('initializeRouteSummaryMap');
+    expect(scriptContent).toContain('generateRouteReports');
+    expect(scriptContent).toContain('addReportMarkersToSummaryMap');
+  });
+
+  test('should have loading overlay control functions', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('showLoadingOverlay');
+    expect(scriptContent).toContain('hideLoadingOverlay');
+    expect(scriptContent).toContain('map.dragging.disable()');
+    expect(scriptContent).toContain('map.dragging.enable()');
+    expect(scriptContent).toContain('map.touchZoom.disable()');
+    expect(scriptContent).toContain('map.scrollWheelZoom.disable()');
+  });
+
+  test('should have demo route summary functionality', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('showDemoRouteSummary');
+    expect(scriptContent).toContain('API unavailable - showing demo route summary');
+    expect(scriptContent).toContain('mockPath');
+    expect(scriptContent).toContain('setTimeout(() => {');
+  });
+
+  test('should have route report generation with different types', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('Police Activity Reported');
+    expect(scriptContent).toContain('Road Work');
+    expect(scriptContent).toContain('Map Data Issue');
+    expect(scriptContent).toContain('Moped Safety Reminder');
+    expect(scriptContent).toContain('Route Clear');
+    expect(scriptContent).toContain('Math.random()');
+  });
+
+  test('should have route summary modal event listeners', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('route-summary-modal-close');
+    expect(scriptContent).toContain('hideRouteSummaryModal');
+    expect(scriptContent).toContain('Navigation started from summary');
+    expect(scriptContent).toContain('Route saved');
+  });
+
+  test('should have mobile responsive design for route summary', () => {
+    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
+    expect(styleContent).toContain('@media (max-width: 640px)');
+    expect(styleContent).toContain('.route-summary-modal-content');
+    expect(styleContent).toContain('width: 95%');
+    expect(styleContent).toContain('flex-direction: column');
+  });
+});
