@@ -40,13 +40,7 @@ body, html {
 
 /* Modal styling */
 .hidden-modal {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.hidden-modal:not(.pointer-events-none) {
-    opacity: 1;
-    pointer-events: auto;
+    display: none;
 }
 
 .modal-overlay {
