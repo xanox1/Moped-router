@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Map Click State ---
     let activeInputField = null; // Track which input field is active for map clicking
+    let startPointMarker = null; // Track individual start point marker
+    let endPointMarker = null; // Track individual end point marker
 
     // --- Utility Functions ---
     const isCoordinate = (input) => {
@@ -412,6 +414,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (routeLayer) {
             routeLayer.clearLayers();
         }
+        // Clear individual point markers
+        clearIndividualMarkers();
         routeInfoDiv.innerHTML = '';
         errorMessageDiv.style.display = 'none';
     };
@@ -463,6 +467,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear previous active state
         startInput.classList.remove('map-click-active');
         endInput.classList.remove('map-click-active');
+        document.getElementById('start-select-btn').classList.remove('active');
+        document.getElementById('end-select-btn').classList.remove('active');
         
         // Remove any existing status messages
         clearMapClickStatus();
@@ -471,6 +477,12 @@ document.addEventListener('DOMContentLoaded', () => {
         activeInputField = field;
         if (field) {
             field.classList.add('map-click-active');
+            // Also activate the corresponding button
+            if (field === startInput) {
+                document.getElementById('start-select-btn').classList.add('active');
+            } else {
+                document.getElementById('end-select-btn').classList.add('active');
+            }
             showMapClickStatus(field);
         }
     };
@@ -509,6 +521,44 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remove pulsing animation from map
         const mapContainer = document.getElementById('map');
         mapContainer.classList.remove('map-click-mode');
+    };
+
+    const createPointMarker = (lat, lng, isStartPoint) => {
+        if (typeof L === 'undefined' || !map) {
+            return null;
+        }
+
+        const icon = L.divIcon({
+            className: `custom-marker ${isStartPoint ? 'start-marker' : 'end-marker'}`,
+            html: `<div class="marker-content"><span class="marker-icon">${isStartPoint ? '🏁' : '🎯'}</span><span class="marker-label">${isStartPoint ? 'Start' : 'End'}</span></div>`,
+            iconSize: [80, 40],
+            iconAnchor: [40, 40]
+        });
+
+        const marker = L.marker([lat, lng], { icon }).addTo(map);
+        
+        // Add click event for address display
+        marker.on('click', async () => {
+            try {
+                const address = await reverseGeocode(lat, lng);
+                marker.bindPopup(`<strong>${isStartPoint ? 'Starting Point' : 'Destination'}</strong><br>${address}`).openPopup();
+            } catch (error) {
+                marker.bindPopup(`<strong>${isStartPoint ? 'Starting Point' : 'Destination'}</strong><br>${lat.toFixed(6)}, ${lng.toFixed(6)}`).openPopup();
+            }
+        });
+
+        return marker;
+    };
+
+    const clearIndividualMarkers = () => {
+        if (startPointMarker) {
+            map.removeLayer(startPointMarker);
+            startPointMarker = null;
+        }
+        if (endPointMarker) {
+            map.removeLayer(endPointMarker);
+            endPointMarker = null;
+        }
     };
 
     const showLocationSetFeedback = (address) => {
@@ -555,13 +605,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 const address = await reverseGeocode(lat, lng);
                 activeInputField.value = address;
                 
+                // Place marker for the selected point
+                const isStartPoint = activeInputField === startInput;
+                
+                // Remove existing marker for this point
+                if (isStartPoint && startPointMarker) {
+                    map.removeLayer(startPointMarker);
+                    startPointMarker = null;
+                } else if (!isStartPoint && endPointMarker) {
+                    map.removeLayer(endPointMarker);
+                    endPointMarker = null;
+                }
+                
+                // Create new marker
+                const marker = createPointMarker(parseFloat(lat), parseFloat(lng), isStartPoint);
+                if (marker) {
+                    if (isStartPoint) {
+                        startPointMarker = marker;
+                    } else {
+                        endPointMarker = marker;
+                    }
+                }
+                
                 // Show user feedback
                 showLocationSetFeedback(address);
             } catch (error) {
                 console.error('Error getting address:', error);
                 // Fallback to coordinates
-                activeInputField.value = `${lat},${lng}`;
-                showLocationSetFeedback(`${lat},${lng}`);
+                const coords = `${lat},${lng}`;
+                activeInputField.value = coords;
+                
+                // Place marker for the selected point
+                const isStartPoint = activeInputField === startInput;
+                
+                // Remove existing marker for this point
+                if (isStartPoint && startPointMarker) {
+                    map.removeLayer(startPointMarker);
+                    startPointMarker = null;
+                } else if (!isStartPoint && endPointMarker) {
+                    map.removeLayer(endPointMarker);
+                    endPointMarker = null;
+                }
+                
+                // Create new marker
+                const marker = createPointMarker(parseFloat(lat), parseFloat(lng), isStartPoint);
+                if (marker) {
+                    if (isStartPoint) {
+                        startPointMarker = marker;
+                    } else {
+                        endPointMarker = marker;
+                    }
+                }
+                
+                showLocationSetFeedback(coords);
             } finally {
                 activeInputField.disabled = false;
                 // Clear active state after setting location
@@ -1074,6 +1170,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Input field click events for map clicking mode
     startInput.addEventListener('click', () => handleFieldClick(startInput));
     endInput.addEventListener('click', () => handleFieldClick(endInput));
+    
+    // Map select button click events
+    document.getElementById('start-select-btn').addEventListener('click', () => handleFieldClick(startInput));
+    document.getElementById('end-select-btn').addEventListener('click', () => handleFieldClick(endInput));
     
     // Context menu item click events
     contextMenu.addEventListener('click', (e) => {
