@@ -135,12 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const startPoint = startInput.value;
         const endPoint = endInput.value;
 
-        // Clear previous state
+        // Clear previous route but keep point markers initially
         if (routeLayer) {
             routeLayer.clearLayers();
         }
-        // Clear individual point markers to avoid double markers
-        clearIndividualMarkers();
         
         routeInfoDiv.innerHTML = '';
         errorMessageDiv.style.display = 'none';
@@ -261,6 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        // Now clear individual point markers since we have a successful route
+        clearIndividualMarkers();
+        
         // GeoJSON coordinates are [lon, lat], Leaflet needs [lat, lon]
         const latLngs = coordinates.map(coord => [coord[1], coord[0]]);
 
@@ -285,20 +286,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ensure main line is on top
         shadowPolyline.bringToBack();
 
-        // Enhanced start marker with custom styling
+        // Simple start marker
         const startIcon = L.divIcon({
-            className: 'custom-marker start-marker',
-            html: '<div class="marker-content"><span class="marker-icon">🏁</span><span class="marker-label">Start</span></div>',
-            iconSize: [80, 40],
-            iconAnchor: [40, 40]
+            className: 'simple-route-marker start-marker',
+            html: '🏁',
+            iconSize: [24, 24],
+            iconAnchor: [12, 24]
         });
 
-        // Enhanced end marker with custom styling
+        // Simple end marker
         const endIcon = L.divIcon({
-            className: 'custom-marker end-marker',
-            html: '<div class="marker-content"><span class="marker-icon">🎯</span><span class="marker-label">Destination</span></div>',
-            iconSize: [80, 40],
-            iconAnchor: [40, 40]
+            className: 'simple-route-marker end-marker',
+            html: '🎯',
+            iconSize: [24, 24],
+            iconAnchor: [12, 24]
         });
 
         // Add interactive markers
@@ -361,9 +362,6 @@ document.addEventListener('DOMContentLoaded', () => {
             timeString = `${minutes}m`;
         }
         
-        // Calculate average speed
-        const avgSpeed = (distance / 1000) / (time / 1000 / 3600);
-        
         routeInfoDiv.innerHTML = `
             <div class="route-info-header">
                 <span class="route-info-icon">🗺️</span>
@@ -384,17 +382,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="info-label">Est. Time</div>
                     </div>
                 </div>
-                <div class="route-info-item">
-                    <span class="info-icon">🏍️</span>
-                    <div class="info-content">
-                        <div class="info-value">${avgSpeed.toFixed(1)} km/h</div>
-                        <div class="info-label">Avg Speed</div>
-                    </div>
-                </div>
-            </div>
-            <div class="route-info-note">
-                <span class="note-icon">ℹ️</span>
-                Route optimized for moped travel (max 45 km/h)
             </div>
         `;
         
