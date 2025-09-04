@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsModalClose = document.querySelector('.settings-modal-close');
 
     // Check if Leaflet is available before initializing map
-    let map, routeLayer;
+    let map;
+    let routeElements = []; // Track route elements individually instead of using layer group
     if (typeof L !== 'undefined') {
         // --- Map Initialization ---
         map = L.map('map').setView(MAP_CENTER, MAP_ZOOM);
@@ -37,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
             errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
             crossOrigin: true
         }).addTo(map);
-        routeLayer = L.layerGroup().addTo(map);
     } else {
         console.warn('Leaflet not available - map functionality disabled');
     }
@@ -142,9 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const endPoint = endInput.value;
 
         // Clear previous route but keep point markers initially
-        if (routeLayer) {
-            routeLayer.clearLayers();
-        }
+        clearRouteElements();
         
         routeInfoDiv.innerHTML = '';
         errorMessageDiv.style.display = 'none';
@@ -260,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const drawRoute = (coordinates) => {
-        if (typeof L === 'undefined' || !routeLayer) {
+        if (typeof L === 'undefined' || !map) {
             console.warn('Map not available - route drawing disabled');
             return;
         }
@@ -278,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
             opacity: 0.8,
             lineJoin: 'round',
             lineCap: 'round'
-        }).addTo(routeLayer);
+        }).addTo(map);
 
         // Add a subtle shadow/outline effect
         const shadowPolyline = L.polyline(latLngs, {
@@ -287,10 +285,13 @@ document.addEventListener('DOMContentLoaded', () => {
             opacity: 0.4,
             lineJoin: 'round',
             lineCap: 'round'
-        }).addTo(routeLayer);
+        }).addTo(map);
         
         // Ensure main line is on top
         shadowPolyline.bringToBack();
+
+        // Track route elements for later cleanup
+        routeElements.push(mainPolyline, shadowPolyline);
 
         // Simple start marker
         const startIcon = L.divIcon({
@@ -309,8 +310,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Add interactive markers
-        const startMarker = L.marker(latLngs[0], { icon: startIcon }).addTo(routeLayer);
-        const endMarker = L.marker(latLngs[latLngs.length - 1], { icon: endIcon }).addTo(routeLayer);
+        const startMarker = L.marker(latLngs[0], { icon: startIcon }).addTo(map);
+        const endMarker = L.marker(latLngs[latLngs.length - 1], { icon: endIcon }).addTo(map);
+
+        // Track markers for later cleanup
+        routeElements.push(startMarker, endMarker);
 
         // Add click events to markers for address display
         startMarker.on('click', async () => {
@@ -432,10 +436,18 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessageDiv.style.display = 'block';
     };
 
+    const clearRouteElements = () => {
+        // Remove all route elements from the map
+        routeElements.forEach(element => {
+            if (map && element) {
+                map.removeLayer(element);
+            }
+        });
+        routeElements = []; // Clear the array
+    };
+
     const clearRoute = () => {
-        if (routeLayer) {
-            routeLayer.clearLayers();
-        }
+        clearRouteElements();
         // Clear individual point markers
         clearIndividualMarkers();
         routeInfoDiv.innerHTML = '';
