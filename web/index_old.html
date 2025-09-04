@@ -8,148 +8,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin=""/>
-    <!-- Tailwind-like CSS classes embedded -->
-    <style>
-        /* Tailwind-like utility classes */
-        .relative { position: relative; }
-        .absolute { position: absolute; }
-        .fixed { position: fixed; }
-        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
-        .top-0 { top: 0; }
-        .bottom-0 { bottom: 0; }
-        .left-0 { left: 0; }
-        .right-0 { right: 0; }
-        .bottom-24 { bottom: 6rem; }
-        .right-4 { right: 1rem; }
-        .top-5 { top: 1.25rem; }
-        .right-5 { right: 1.25rem; }
-        .w-full { width: 100%; }
-        .h-full { height: 100%; }
-        .w-4 { width: 1rem; }
-        .h-4 { height: 1rem; }
-        .w-6 { width: 1.5rem; }
-        .h-6 { height: 1.5rem; }
-        .w-7 { width: 1.75rem; }
-        .h-7 { height: 1.75rem; }
-        .w-8 { width: 2rem; }
-        .h-8 { height: 2rem; }
-        .w-12 { width: 3rem; }
-        .h-12 { height: 3rem; }
-        .w-14 { width: 3.5rem; }
-        .h-14 { height: 3.5rem; }
-        .w-24 { width: 6rem; }
-        .h-24 { height: 6rem; }
-        .w-2\.5 { width: 0.625rem; }
-        .h-2\.5 { height: 0.625rem; }
-        .w-px { width: 1px; }
-        .max-w-md { max-width: 28rem; }
-        .max-w-sm { max-width: 24rem; }
-        .mx-auto { margin-left: auto; margin-right: auto; }
-        .my-1\.5 { margin-top: 0.375rem; margin-bottom: 0.375rem; }
-        .my-4 { margin-top: 1rem; margin-bottom: 1rem; }
-        .my-6 { margin-top: 1.5rem; margin-bottom: 1.5rem; }
-        .mt-3 { margin-top: 0.75rem; }
-        .mb-3 { margin-bottom: 0.75rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .p-2 { padding: 0.5rem; }
-        .p-3 { padding: 0.75rem; }
-        .p-4 { padding: 1rem; }
-        .p-5 { padding: 1.25rem; }
-        .p-6 { padding: 1.5rem; }
-        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
-        .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .bg-white { background-color: rgb(255 255 255); }
-        .bg-blue-400 { background-color: rgb(96 165 250); }
-        .bg-blue-500 { background-color: rgb(59 130 246); }
-        .bg-blue-600 { background-color: rgb(37 99 235); }
-        .bg-red-500 { background-color: rgb(239 68 68); }
-        .bg-red-600 { background-color: rgb(220 38 38); }
-        .bg-gray-100 { background-color: rgb(243 244 246); }
-        .bg-gray-200 { background-color: rgb(229 231 235); }
-        .bg-gray-300 { background-color: rgb(209 213 219); }
-        .bg-gray-500 { background-color: rgb(107 114 128); }
-        .bg-green-500 { background-color: rgb(34 197 94); }
-        .bg-white\/90 { background-color: rgb(255 255 255 / 0.9); }
-        .bg-black\/50 { background-color: rgb(0 0 0 / 0.5); }
-        .text-white { color: rgb(255 255 255); }
-        .text-gray-400 { color: rgb(156 163 175); }
-        .text-gray-500 { color: rgb(107 114 128); }
-        .text-gray-600 { color: rgb(75 85 99); }
-        .text-gray-800 { color: rgb(31 41 55); }
-        .text-gray-900 { color: rgb(17 24 39); }
-        .text-blue-500 { color: rgb(59 130 246); }
-        .text-blue-600 { color: rgb(37 99 235); }
-        .text-orange-500 { color: rgb(249 115 22); }
-        .border-2 { border-width: 2px; }
-        .border-white { border-color: rgb(255 255 255); }
-        .border-gray-200 { border-color: rgb(229 231 235); }
-        .rounded-full { border-radius: 9999px; }
-        .rounded-lg { border-radius: 0.5rem; }
-        .rounded-xl { border-radius: 0.75rem; }
-        .rounded-2xl { border-radius: 1rem; }
-        .rounded-t-2xl { border-top-left-radius: 1rem; border-top-right-radius: 1rem; }
-        .rounded-l-2xl { border-top-left-radius: 1rem; border-bottom-left-radius: 1rem; }
-        .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
-        .shadow-xl { box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
-        .shadow-2xl { box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); }
-        .flex { display: flex; }
-        .items-center { align-items: center; }
-        .items-start { align-items: flex-start; }
-        .justify-center { justify-content: center; }
-        .justify-between { justify-content: space-between; }
-        .justify-around { justify-content: space-around; }
-        .flex-col { flex-direction: column; }
-        .flex-grow { flex-grow: 1; }
-        .self-stretch { align-self: stretch; }
-        .space-x-2 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.5rem; }
-        .space-y-1 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.25rem; }
-        .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
-        .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
-        .text-xs { font-size: 0.75rem; line-height: 1rem; }
-        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
-        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
-        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
-        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
-        .font-medium { font-weight: 500; }
-        .font-semibold { font-weight: 600; }
-        .font-bold { font-weight: 700; }
-        .text-center { text-align: center; }
-        .focus\:outline-none:focus { outline: 2px solid transparent; outline-offset: 2px; }
-        .focus\:ring-2:focus { box-shadow: 0 0 0 2px currentColor; }
-        .focus\:ring-blue-500:focus { box-shadow: 0 0 0 2px rgb(59 130 246); }
-        .hover\:bg-gray-100:hover { background-color: rgb(243 244 246); }
-        .hover\:bg-gray-200:hover { background-color: rgb(229 231 235); }
-        .hover\:bg-gray-200\/70:hover { background-color: rgb(229 231 235 / 0.7); }
-        .hover\:bg-blue-600:hover { background-color: rgb(37 99 235); }
-        .hover\:bg-red-600:hover { background-color: rgb(220 38 38); }
-        .hover\:text-gray-800:hover { color: rgb(31 41 55); }
-        .hover\:scale-110:hover { transform: scale(1.1); }
-        .transition { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
-        .transition-colors { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
-        .transition-transform { transition-property: transform; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
-        .duration-300 { transition-duration: 300ms; }
-        .ease-in-out { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-        .transform { transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)); }
-        .translate-x-6 { transform: translateX(1.5rem); }
-        .translate-x-10 { transform: translateX(2.5rem); }
-        .translate-x-full { transform: translateX(100%); }
-        .translate-y-full { transform: translateY(100%); }
-        .-translate-y-full { transform: translateY(-100%); }
-        .opacity-0 { opacity: 0; }
-        .opacity-30 { opacity: 0.3; }
-        .z-10 { z-index: 10; }
-        .z-20 { z-index: 20; }
-        .z-30 { z-index: 30; }
-        .z-50 { z-index: 50; }
-        .backdrop-blur-sm { backdrop-filter: blur(4px); }
-        .pointer-events-none { pointer-events: none; }
-        .cursor-pointer { cursor: pointer; }
-    </style>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Local CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
@@ -319,22 +179,6 @@
     <div id="api-status-indicator" style="display: none;"></div>
     <div id="error-message" style="display: none;"></div>
     
-    <!-- Hidden legacy elements for test compatibility -->
-    <div id="menu-btn" class="menu-btn" style="display: none;">
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-    </div>
-    <div id="api-status" style="display: none;"></div>
-    <div id="user-section" style="display: none;"></div>
-    <div id="community-section" style="display: none;"></div>
-    <div id="achievements-section" style="display: none;"></div>
-    <div id="community-stats" style="display: none;"></div>
-    <div class="input-with-button" style="display: none;">
-        <button id="start-select-btn" class="map-select-btn">📍</button>
-        <button id="end-select-btn" class="map-select-btn">🎯</button>
-    </div>
-    
     <!-- Context Menu -->
     <div id="context-menu" class="context-menu" style="display: none;">
         <div class="context-menu-item" data-action="directions-from">
@@ -404,6 +248,246 @@
                         <span class="checkmark"></span>
                         📊 Community Stats
                     </label>
+                </div>
+            </div>
+        </div>
+    </div>
+            <div class="header-section">
+                <h1>Moped Router</h1>
+                <button id="menu-btn" class="menu-btn" title="Menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav id="nav-menu" class="nav-menu" style="display: none;">
+                <div class="nav-section">
+                    <h3 class="nav-title">Account</h3>
+                    <a href="#" class="nav-item" data-action="login">
+                        <span class="nav-icon">👤</span>
+                        <span>Sign In</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="signup">
+                        <span class="nav-icon">📝</span>
+                        <span>Sign Up</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="profile">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Profile Settings</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <h3 class="nav-title">Application</h3>
+                    <a href="#" class="nav-item" data-action="app-settings">
+                        <span class="nav-icon">🔧</span>
+                        <span>App Settings</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="preferences">
+                        <span class="nav-icon">🎛️</span>
+                        <span>Preferences</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <h3 class="nav-title">Help & Info</h3>
+                    <a href="#" class="nav-item" data-action="about">
+                        <span class="nav-icon">ℹ️</span>
+                        <span>About</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="help">
+                        <span class="nav-icon">❓</span>
+                        <span>Help & Support</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="privacy">
+                        <span class="nav-icon">🔒</span>
+                        <span>Privacy Policy</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <!-- User Profile Section -->
+            <div class="user-section" id="user-section">
+                <div class="profile-container">
+                    <div class="profile-avatar">
+                        <div class="avatar-circle">
+                            <span class="avatar-initials">R</span>
+                        </div>
+                    </div>
+                    <div class="profile-info">
+                        <span class="username">Rider #123</span>
+                        <div class="user-stats">
+                            <span class="stat-value">1,247</span>
+                            <span class="stat-label">Points</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="start">From</label>
+                <div class="input-with-button">
+                    <button class="map-select-btn" id="start-select-btn" title="Click to select starting point on map">📍</button>
+                    <input type="text" id="start" value="" placeholder="e.g., Amsterdam Central Station or 52.3702,4.8952">
+                </div>
+                <small class="field-hint">Click the pin button or input field, then click on the map to set coordinates</small>
+            </div>
+            <div class="input-group">
+                <label for="end">To</label>
+                <div class="input-with-button">
+                    <button class="map-select-btn" id="end-select-btn" title="Click to select destination on map">🎯</button>
+                    <input type="text" id="end" value="" placeholder="e.g., Utrecht Centraal or 52.0907,5.1214">
+                </div>
+                <small class="field-hint">Click the pin button or input field, then click on the map to set coordinates</small>
+            </div>
+
+
+
+            <button id="getRouteBtn">Get Route</button>
+            <button id="clearRouteBtn">Clear Route</button>
+            
+            <!-- Community Reporting Section -->
+            <div class="community-section" id="community-section">
+                <h3>Report Road Conditions</h3>
+                <div class="report-grid">
+                    <button class="report-btn traffic-btn" data-type="traffic">
+                        <span class="report-icon">🚗</span>
+                        <span class="report-text">Traffic</span>
+                        <span class="points-badge">+5</span>
+                    </button>
+                    <button class="report-btn police-btn" data-type="police">
+                        <span class="report-icon">👮</span>
+                        <span class="report-text">Police</span>
+                        <span class="points-badge">+10</span>
+                    </button>
+                    <button class="report-btn hazard-btn" data-type="hazard">
+                        <span class="report-icon">⚠️</span>
+                        <span class="report-text">Hazard</span>
+                        <span class="points-badge">+15</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="api-status" id="api-status">
+                <label>API Status:</label>
+                <span id="api-status-indicator" class="status-indicator unknown">Unknown</span>
+                <button id="testApiBtn">Test API</button>
+            </div>
+
+            <div id="route-info"></div>
+            <div id="error-message" class="error"></div>
+            
+            <!-- Achievement Section -->
+            <div class="achievements-section" id="achievements-section">
+                <h3>Recent Achievements</h3>
+                <div class="achievement-grid">
+                    <div class="achievement-card earned" title="First Route Planned">
+                        <div class="achievement-icon">🗺️</div>
+                        <div class="achievement-name">Navigator</div>
+                    </div>
+                    <div class="achievement-card earned" title="Community Helper">
+                        <div class="achievement-icon">🤝</div>
+                        <div class="achievement-name">Helper</div>
+                    </div>
+                    <div class="achievement-card locked" title="Speed Demon - 100 routes">
+                        <div class="achievement-icon">🏎️</div>
+                        <div class="achievement-name">Speed Demon</div>
+                    </div>
+                    <div class="achievement-card locked" title="Explorer - 10 cities">
+                        <div class="achievement-icon">🌍</div>
+                        <div class="achievement-name">Explorer</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Community Stats -->
+            <div class="community-stats" id="community-stats">
+                <h3>Community Activity</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">42</div>
+                        <div class="stat-label">Reports Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">1,337</div>
+                        <div class="stat-label">Active Riders</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="map"></div>
+        
+        <!-- Context Menu -->
+        <div id="context-menu" class="context-menu" style="display: none;">
+            <div class="context-menu-item" data-action="directions-from">
+                <span class="context-menu-icon">📍</span>
+                Directions from here
+            </div>
+            <div class="context-menu-item" data-action="directions-to">
+                <span class="context-menu-icon">🎯</span>
+                Directions to here
+            </div>
+            <div class="context-menu-separator"></div>
+            <div class="context-menu-item" data-action="show-address">
+                <span class="context-menu-icon">📍</span>
+                Show address
+            </div>
+            <div class="context-menu-item" data-action="query-features">
+                <span class="context-menu-icon">🔍</span>
+                Query features
+            </div>
+        </div>
+        
+        <!-- Feature Information Modal -->
+        <div id="feature-modal" class="feature-modal" style="display: none;">
+            <div class="feature-modal-content">
+                <div class="feature-modal-header">
+                    <h3>Feature Information</h3>
+                    <span class="feature-modal-close">&times;</span>
+                </div>
+                <div class="feature-modal-body" id="feature-modal-body">
+                    <!-- Feature information will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="settings-modal" style="display: none;">
+            <div class="settings-modal-content">
+                <div class="settings-modal-header">
+                    <h3>⚙️ Settings</h3>
+                    <span class="settings-modal-close">&times;</span>
+                </div>
+                <div class="settings-modal-body">
+                    <h4>Show/Hide Sections</h4>
+                    <div class="settings-options">
+                        <label class="setting-item">
+                            <input type="checkbox" id="setting-api-status" checked>
+                            <span class="checkmark"></span>
+                            🌐 API Status
+                        </label>
+                        <label class="setting-item">
+                            <input type="checkbox" id="setting-user-section" checked>
+                            <span class="checkmark"></span>
+                            😊 User Account & Emoticons
+                        </label>
+                        <label class="setting-item">
+                            <input type="checkbox" id="setting-community-section" checked>
+                            <span class="checkmark"></span>
+                            🚨 Community Reporting
+                        </label>
+                        <label class="setting-item">
+                            <input type="checkbox" id="setting-achievements-section" checked>
+                            <span class="checkmark"></span>
+                            🏆 Achievements
+                        </label>
+                        <label class="setting-item">
+                            <input type="checkbox" id="setting-community-stats" checked>
+                            <span class="checkmark"></span>
+                            📊 Community Stats
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
