@@ -2204,6 +2204,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Integrate with existing routing - trigger Get Route when inputs change
     if (startInput && endInput) {
+        const routeSearchBtn = document.getElementById('route-search-btn');
+        
+        const updateRouteButton = () => {
+            const startValue = startInput.value.trim();
+            const endValue = endInput.value.trim();
+            
+            const shouldShowButton = startValue && endValue && 
+                startValue !== 'Current Location' && 
+                startValue !== 'Where to?' && 
+                endValue !== 'Current Location' && 
+                endValue !== 'Where to?' &&
+                endValue !== '';
+            
+            if (routeSearchBtn) {
+                if (shouldShowButton) {
+                    routeSearchBtn.classList.remove('hidden');
+                } else {
+                    routeSearchBtn.classList.add('hidden');
+                }
+            }
+        };
+        
         const triggerRoute = () => {
             const startValue = startInput.value.trim();
             const endValue = endInput.value.trim();
@@ -2226,8 +2248,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        startInput.addEventListener('blur', triggerRoute);
-        endInput.addEventListener('blur', triggerRoute);
+        // Add route button click handler
+        if (routeSearchBtn) {
+            routeSearchBtn.addEventListener('click', () => {
+                console.log('Manual route button clicked...');
+                getRoute();
+            });
+        }
+
+        startInput.addEventListener('blur', () => {
+            updateRouteButton();
+            triggerRoute();
+        });
+        endInput.addEventListener('blur', () => {
+            updateRouteButton();
+            triggerRoute();
+        });
         endInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 triggerRoute();
@@ -2238,11 +2274,23 @@ document.addEventListener('DOMContentLoaded', () => {
         let routeTimeout;
         const delayedTriggerRoute = () => {
             clearTimeout(routeTimeout);
-            routeTimeout = setTimeout(triggerRoute, 1000); // Wait 1 second after typing stops
+            routeTimeout = setTimeout(() => {
+                updateRouteButton();
+                triggerRoute();
+            }, 1000); // Wait 1 second after typing stops
         };
         
-        startInput.addEventListener('input', delayedTriggerRoute);
-        endInput.addEventListener('input', delayedTriggerRoute);
+        startInput.addEventListener('input', () => {
+            updateRouteButton();
+            delayedTriggerRoute();
+        });
+        endInput.addEventListener('input', () => {
+            updateRouteButton();
+            delayedTriggerRoute();
+        });
+        
+        // Initialize button visibility on page load
+        updateRouteButton();
     }
 
     // Escape key handler
