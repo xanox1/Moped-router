@@ -640,3 +640,26 @@ describe('Settings Menu Functionality', () => {
     expect(htmlContent).toContain('id="community-stats"');
   });
 });
+
+describe('Route Element Management Fix', () => {
+  test('should use routeElements array instead of routeLayer for better map sync', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('let routeElements = []');
+    expect(scriptContent).toContain('routeElements.push(mainPolyline, shadowPolyline)');
+    expect(scriptContent).toContain('routeElements.push(startMarker, endMarker)');
+  });
+
+  test('should have clearRouteElements function for proper cleanup', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('const clearRouteElements = () => {');
+    expect(scriptContent).toContain('map.removeLayer(element)');
+    expect(scriptContent).toContain('routeElements = []');
+  });
+
+  test('should add route elements directly to map instead of layer group', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('.addTo(map)');
+    expect(scriptContent).not.toContain('L.layerGroup().addTo(map)');
+    expect(scriptContent).not.toContain('.addTo(routeLayer)');
+  });
+});
