@@ -183,38 +183,33 @@ h1 {
 }
 
 .map-select-btn {
-    background: rgba(76, 175, 80, 0.9);
-    border: 1px solid rgba(76, 175, 80, 0.3);
-    border-radius: 6px;
-    color: white;
+    background: transparent;
+    border: none;
+    color: #4caf50;
     cursor: pointer;
-    font-size: 1rem;
-    padding: 8px 10px;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    min-width: 36px;
-    height: 36px;
+    font-size: 1.2rem;
+    padding: 4px;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 4px;
 }
 
 .map-select-btn:hover {
-    background: rgba(76, 175, 80, 1);
-    border-color: rgba(76, 175, 80, 0.6);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    background: rgba(76, 175, 80, 0.1);
+    transform: scale(1.1);
 }
 
 .map-select-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+    transform: scale(0.95);
 }
 
 .map-select-btn.active {
-    background: rgba(102, 187, 106, 1);
-    border-color: rgba(102, 187, 106, 0.8);
-    box-shadow: 0 0 0 2px rgba(102, 187, 106, 0.4);
+    background: rgba(76, 175, 80, 0.2);
+    color: #66bb6a;
 }
 
 .input-group input::placeholder {
@@ -414,19 +409,27 @@ button:disabled {
 
 #route-info {
     margin-top: 20px;
-    padding: 20px;
-    background: rgba(76, 175, 80, 0.15);
-    border: 2px solid rgba(76, 175, 80, 0.4);
+    padding: 0;
+    background: transparent;
+    border: none;
     border-radius: 12px;
     color: #4caf50;
     font-weight: 600;
     font-size: 0.9rem;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+    backdrop-filter: none;
+    box-shadow: none;
     transition: all 0.3s ease;
 }
 
-#route-info:hover {
+#route-info:not(:empty) {
+    padding: 20px;
+    background: rgba(76, 175, 80, 0.15);
+    border: 2px solid rgba(76, 175, 80, 0.4);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+}
+
+#route-info:not(:empty):hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
 }
@@ -452,7 +455,7 @@ button:disabled {
 
 .route-info-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
     margin-bottom: 16px;
 }
@@ -1279,6 +1282,15 @@ button:disabled {
     border-color: rgba(100, 181, 246, 0.5);
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(100, 181, 246, 0.2);
+}
+
+/* Simple route markers */
+.simple-route-marker {
+    background: transparent !important;
+    border: none !important;
+    font-size: 20px;
+    text-align: center;
+    line-height: 1;
 }
 
 /* Map container enhanced styling */
