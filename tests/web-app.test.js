@@ -463,6 +463,35 @@ describe('Map Click Functionality', () => {
     const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
     expect(styleContent).toContain('.map-click-active');
   });
+
+  test('should have individual marker tracking variables', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('let startPointMarker = null');
+    expect(scriptContent).toContain('let endPointMarker = null');
+  });
+
+  test('should have marker creation function', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('const createPointMarker');
+  });
+
+  test('should have individual marker clearing function', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('const clearIndividualMarkers');
+  });
+
+  test('should have dedicated selection buttons in HTML', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('id="start-select-btn"');
+    expect(htmlContent).toContain('id="end-select-btn"');
+    expect(htmlContent).toContain('class="map-select-btn"');
+  });
+
+  test('should have CSS styling for selection buttons', () => {
+    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
+    expect(styleContent).toContain('.map-select-btn');
+    expect(styleContent).toContain('.input-with-button');
+  });
 });
 
 describe('Context Menu Functionality', () => {

@@ -89,13 +89,19 @@
             </div>
             <div class="input-group">
                 <label for="start">From</label>
-                <input type="text" id="start" value="" placeholder="e.g., Amsterdam Central Station or 52.3702,4.8952">
-                <small class="field-hint">Click here, then click on the map to set coordinates</small>
+                <div class="input-with-button">
+                    <button class="map-select-btn" id="start-select-btn" title="Click to select starting point on map">📍</button>
+                    <input type="text" id="start" value="" placeholder="e.g., Amsterdam Central Station or 52.3702,4.8952">
+                </div>
+                <small class="field-hint">Click the pin button or input field, then click on the map to set coordinates</small>
             </div>
             <div class="input-group">
                 <label for="end">To</label>
-                <input type="text" id="end" value="" placeholder="e.g., Utrecht Centraal or 52.0907,5.1214">
-                <small class="field-hint">Click here, then click on the map to set coordinates</small>
+                <div class="input-with-button">
+                    <button class="map-select-btn" id="end-select-btn" title="Click to select destination on map">🎯</button>
+                    <input type="text" id="end" value="" placeholder="e.g., Utrecht Centraal or 52.0907,5.1214">
+                </div>
+                <small class="field-hint">Click the pin button or input field, then click on the map to set coordinates</small>
             </div>
 
 

@@ -172,6 +172,51 @@ h1 {
     backdrop-filter: blur(10px);
 }
 
+.input-with-button {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.input-with-button input {
+    flex: 1;
+}
+
+.map-select-btn {
+    background: rgba(76, 175, 80, 0.9);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 12px 14px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    min-width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-select-btn:hover {
+    background: rgba(76, 175, 80, 1);
+    border-color: rgba(76, 175, 80, 0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.map-select-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+}
+
+.map-select-btn.active {
+    background: rgba(102, 187, 106, 1);
+    border-color: rgba(102, 187, 106, 0.8);
+    box-shadow: 0 0 0 2px rgba(102, 187, 106, 0.4);
+}
+
 .input-group input::placeholder {
     color: #6b7280;
 }
