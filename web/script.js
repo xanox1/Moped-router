@@ -1006,31 +1006,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load settings on page load
     loadSettings();
 
-    // --- Gamification Features ---
-    
-    // Mood selector functionality
-    const moodOptions = document.querySelectorAll('.mood-option');
-    const userAvatar = document.getElementById('user-avatar');
-    
-    moodOptions.forEach(option => {
-        option.addEventListener('click', () => {
-            // Remove active class from all options
-            moodOptions.forEach(opt => opt.classList.remove('active'));
-            // Add active class to clicked option
-            option.classList.add('active');
-            // Update avatar
-            userAvatar.textContent = option.dataset.mood;
-            // Add celebration effect
-            userAvatar.style.animation = 'none';
-            setTimeout(() => {
-                userAvatar.style.animation = 'pulse 0.5s ease-in-out';
-            }, 10);
-        });
-    });
+    // --- Community Features ---
     
     // Community reporting functionality
     const reportButtons = document.querySelectorAll('.report-btn');
-    const userPointsElement = document.getElementById('user-points');
+    const userStatsElement = document.querySelector('.stat-value');
     
     let currentPoints = 1247; // Starting points
     
@@ -1042,7 +1022,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Add points
             currentPoints += pointsReward;
-            userPointsElement.textContent = `${currentPoints.toLocaleString()} pts`;
+            if (userStatsElement) {
+                userStatsElement.textContent = currentPoints.toLocaleString();
+            }
             
             // Show confirmation message
             showReportConfirmation(reportType, pointsReward);
@@ -1080,15 +1062,18 @@ document.addEventListener('DOMContentLoaded', () => {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: linear-gradient(135deg, #55efc4, #00b894);
+            background: rgba(76, 175, 80, 0.95);
+            backdrop-filter: blur(10px);
             color: white;
-            padding: 15px 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 16px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             z-index: 10000;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 0.9rem;
             text-align: center;
-            animation: slideInRight 0.5s ease-out;
+            animation: slideInRight 0.3s ease-out;
         `;
         
         document.body.appendChild(notification);
