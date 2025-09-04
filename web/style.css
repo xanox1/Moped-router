@@ -17,6 +17,22 @@ body, html {
     z-index: 1; /* Ensure map stays below all UI elements */
 }
 
+/* Ensure all Leaflet-generated elements respect z-index hierarchy */
+#map * {
+    z-index: 1 !important;
+}
+
+/* Specifically target Leaflet container elements */
+#map .leaflet-container,
+#map .leaflet-map-pane,
+#map .leaflet-tile-pane,
+#map .leaflet-overlay-pane,
+#map .leaflet-marker-pane,
+#map .leaflet-popup-pane,
+#map .leaflet-control-container {
+    z-index: 1 !important;
+}
+
 /* Fallback when map doesn't load */
 #map:empty::before {
     content: "🗺️ Map View";
