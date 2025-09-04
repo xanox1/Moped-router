@@ -17,8 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const routeInfoDiv = document.getElementById('route-info');
     const errorMessageDiv = document.getElementById('error-message');
     
-    // Settings elements
-    const settingsBtn = document.getElementById('settings-btn');
+    // Navigation elements
+    const menuBtn = document.getElementById('menu-btn');
+    const navMenu = document.getElementById('nav-menu');
+    
+    // Settings elements (kept for existing functionality)
     const settingsModal = document.getElementById('settings-modal');
     const settingsModalClose = document.querySelector('.settings-modal-close');
 
@@ -845,8 +848,58 @@ document.addEventListener('DOMContentLoaded', () => {
             hideContextMenu();
             hideFeatureModal();
             hideSettingsModal();
+            hideNavMenu();
         }
     });
+
+    // --- Navigation Menu Functionality ---
+    const showNavMenu = () => {
+        navMenu.style.display = navMenu.style.display === 'none' ? 'block' : 'none';
+    };
+
+    const hideNavMenu = () => {
+        navMenu.style.display = 'none';
+    };
+
+    const handleNavAction = (action) => {
+        hideNavMenu();
+        
+        switch (action) {
+        case 'login':
+            // TODO: Implement login functionality
+            alert('Login functionality coming soon!');
+            break;
+        case 'signup':
+            // TODO: Implement signup functionality
+            alert('Signup functionality coming soon!');
+            break;
+        case 'profile':
+            // TODO: Implement profile settings
+            alert('Profile settings coming soon!');
+            break;
+        case 'app-settings':
+            showSettingsModal();
+            break;
+        case 'preferences':
+            // TODO: Implement preferences
+            alert('Preferences coming soon!');
+            break;
+        case 'about':
+            // TODO: Implement about page
+            alert('About: Moped Router v1.0.0\n\nA modern routing application for moped navigation.');
+            break;
+        case 'help':
+            // TODO: Implement help system
+            alert('Help & Support coming soon!');
+            break;
+        case 'privacy':
+            // TODO: Implement privacy policy
+            alert('Privacy Policy coming soon!');
+            break;
+        default:
+            console.warn('Unknown navigation action:', action);
+        }
+    };
 
     // --- Settings Functionality ---
     const settingsConfig = {
@@ -914,8 +967,27 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsModal.style.display = 'none';
     };
 
-    // Settings event listeners
-    settingsBtn.addEventListener('click', showSettingsModal);
+    // Navigation event listeners
+    menuBtn.addEventListener('click', showNavMenu);
+    
+    // Navigation menu item clicks
+    navMenu.addEventListener('click', (e) => {
+        const navItem = e.target.closest('.nav-item');
+        if (navItem) {
+            e.preventDefault();
+            const action = navItem.dataset.action;
+            handleNavAction(action);
+        }
+    });
+    
+    // Hide menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!menuBtn.contains(e.target) && !navMenu.contains(e.target)) {
+            hideNavMenu();
+        }
+    });
+
+    // Settings event listeners (updated to remove settingsBtn reference)
     settingsModalClose.addEventListener('click', hideSettingsModal);
     settingsModal.addEventListener('click', (e) => {
         if (e.target === settingsModal) {

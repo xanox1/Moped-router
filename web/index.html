@@ -16,8 +16,59 @@
         <div class="controls">
             <div class="header-section">
                 <h1>Moped Router</h1>
-                <button id="settings-btn" class="settings-btn" title="Settings">⚙️</button>
+                <button id="menu-btn" class="menu-btn" title="Menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
             </div>
+            
+            <!-- Navigation Menu -->
+            <nav id="nav-menu" class="nav-menu" style="display: none;">
+                <div class="nav-section">
+                    <h3 class="nav-title">Account</h3>
+                    <a href="#" class="nav-item" data-action="login">
+                        <span class="nav-icon">👤</span>
+                        <span>Sign In</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="signup">
+                        <span class="nav-icon">📝</span>
+                        <span>Sign Up</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="profile">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Profile Settings</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <h3 class="nav-title">Application</h3>
+                    <a href="#" class="nav-item" data-action="app-settings">
+                        <span class="nav-icon">🔧</span>
+                        <span>App Settings</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="preferences">
+                        <span class="nav-icon">🎛️</span>
+                        <span>Preferences</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <h3 class="nav-title">Help & Info</h3>
+                    <a href="#" class="nav-item" data-action="about">
+                        <span class="nav-icon">ℹ️</span>
+                        <span>About</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="help">
+                        <span class="nav-icon">❓</span>
+                        <span>Help & Support</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="privacy">
+                        <span class="nav-icon">🔒</span>
+                        <span>Privacy Policy</span>
+                    </a>
+                </div>
+            </nav>
             
             <!-- User Avatar/Mood Section -->
             <div class="user-section" id="user-section">
