@@ -30,7 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof L !== 'undefined') {
         // --- Map Initialization ---
         map = L.map('map').setView(MAP_CENTER, MAP_ZOOM);
-        L.tileLayer(TILE_URL, { attribution: MAP_ATTRIBUTION }).addTo(map);
+        L.tileLayer(TILE_URL, { 
+            attribution: MAP_ATTRIBUTION,
+            maxZoom: 18,
+            subdomains: ['a', 'b', 'c'],
+            errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+            crossOrigin: true
+        }).addTo(map);
         routeLayer = L.layerGroup().addTo(map);
     } else {
         console.warn('Leaflet not available - map functionality disabled');
@@ -268,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Enhanced polyline with gradient-like effect using multiple layers
         const mainPolyline = L.polyline(latLngs, {
             color: '#4caf50',
-            weight: 6,
+            weight: 4,
             opacity: 0.8,
             lineJoin: 'round',
             lineCap: 'round'
@@ -277,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add a subtle shadow/outline effect
         const shadowPolyline = L.polyline(latLngs, {
             color: '#2e7d32',
-            weight: 8,
+            weight: 6,
             opacity: 0.4,
             lineJoin: 'round',
             lineCap: 'round'
@@ -328,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add hover effects to the route line
         mainPolyline.on('mouseover', function() {
             this.setStyle({
-                weight: 8,
+                weight: 6,
                 opacity: 1,
                 color: '#66bb6a'
             });
@@ -336,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         mainPolyline.on('mouseout', function() {
             this.setStyle({
-                weight: 6,
+                weight: 4,
                 opacity: 0.8,
                 color: '#4caf50'
             });
