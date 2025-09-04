@@ -1459,4 +1459,420 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Test API connection on page load
     testApiConnection();
+
+    // --- New Mobile UI Functionality ---
+    
+    // Mobile UI Elements
+    const genericModal = document.getElementById('generic-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+    const modalCloseButton = document.getElementById('modal-close-button');
+    const layersMenu = document.getElementById('layers-menu');
+    const layersCloseButton = document.getElementById('layers-close-button');
+    const toast = document.getElementById('toast');
+    
+    // Navigation elements
+    const searchHeader = document.getElementById('search-header');
+    const bottomNav = document.getElementById('bottom-nav');
+    const actionButtons = document.getElementById('action-buttons');
+    const navigationHeader = document.getElementById('navigation-header');
+    const navigationFooter = document.getElementById('navigation-footer');
+    const gpsDot = document.getElementById('gps-dot');
+    
+    // Route and navigation elements
+    const startNavButton = document.getElementById('start-nav-button');
+    const endNavButton = document.getElementById('end-nav-button');
+    const closeRouteInfoButton = document.getElementById('close-route-info');
+    
+    // State variables
+    let isLoggedIn = false;
+    let isNavigating = false;
+    let navigationInterval = null;
+    let currentStep = 0;
+    
+    // Mock navigation directions
+    const mockDirections = [
+        { instruction: 'Head north on Amsterdam Street', street: 'Amsterdam Street' },
+        { instruction: 'In 200m, turn right', street: 'Main Street' },
+        { instruction: 'Continue straight', street: 'Main Street' },
+        { instruction: 'In 500m, turn left', street: 'Utrecht Avenue' },
+        { instruction: 'Destination reached', street: 'Central Park' }
+    ];
+    
+    // Menu content configuration
+    const menuContent = {
+        saved: {
+            title: 'Saved Places',
+            html: `<ul class="space-y-3">
+                        <li class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 cursor-pointer"><span>Home</span><span class="text-xs text-gray-400">Amsterdam</span></li>
+                        <li class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 cursor-pointer"><span>Work</span><span class="text-xs text-gray-400">Utrecht</span></li>
+                        <li class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 cursor-pointer"><span>Gym</span><span class="text-xs text-gray-400">Amsterdam</span></li>
+                       </ul>`
+        },
+        recents: {
+            title: 'Recent Trips',
+            html: `<ul class="space-y-3">
+                        <li class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 cursor-pointer"><span>Central Station</span><span class="text-xs text-gray-400">Today</span></li>
+                        <li class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 cursor-pointer"><span>Rijksmuseum</span><span class="text-xs text-gray-400">Yesterday</span></li>
+                        <li class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 cursor-pointer"><span>Vondelpark</span><span class="text-xs text-gray-400">2 days ago</span></li>
+                       </ul>`
+        },
+        settings: {
+            title: 'Settings',
+            html: `
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center"><label for="police-reports" class="font-medium">Show Police Reports</label><div class="w-12 h-6 flex items-center bg-blue-500 rounded-full p-1 cursor-pointer" onclick="this.classList.toggle('bg-gray-300'); this.classList.toggle('bg-blue-500'); this.firstElementChild.classList.toggle('translate-x-6')"><div class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out translate-x-6"></div></div></div>
+                    <div class="flex justify-between items-center"><label for="voice" class="font-medium">Voice Navigation</label><div class="w-12 h-6 flex items-center bg-blue-500 rounded-full p-1 cursor-pointer" onclick="this.classList.toggle('bg-gray-300'); this.classList.toggle('bg-blue-500'); this.firstElementChild.classList.toggle('translate-x-6')"><div class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out translate-x-6"></div></div></div>
+                    <div class="flex justify-between items-center"><label for="avoid-tolls" class="font-medium">Avoid Tolls</label><div class="w-12 h-6 flex items-center bg-gray-300 rounded-full p-1 cursor-pointer" onclick="this.classList.toggle('bg-gray-300'); this.classList.toggle('bg-blue-500'); this.firstElementChild.classList.toggle('translate-x-6')"><div class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"></div></div></div>
+                </div>`
+        },
+        profile: {
+            title: 'Profile',
+            // This function determines which HTML to show
+            html: () => {
+                if (isLoggedIn) {
+                    return `
+                        <div class="text-center">
+                            <img src="https://placehold.co/100x100/e2e8f0/334155?text=J" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md">
+                            <h3 class="text-2xl font-bold">Jeroen</h3>
+                            <p class="text-gray-500">Riding since 2024</p>
+                        </div>
+                        <div class="flex justify-around my-6 bg-gray-100 p-4 rounded-xl">
+                            <div class="text-center"><p class="font-bold text-xl">1,204</p><p class="text-xs text-gray-500">KM Ridden</p></div>
+                            <div class="text-center"><p class="font-bold text-xl">15</p><p class="text-xs text-gray-500">Friends</p></div>
+                            <div class="text-center"><p class="font-bold text-xl">8</p><p class="text-xs text-gray-500">Reports</p></div>
+                        </div>
+                        <button id="logout-button" class="w-full bg-red-500 text-white font-semibold py-2 rounded-lg hover:bg-red-600 transition">Logout</button>
+                    `;
+                } else {
+                    return `
+                        <h3 class="text-xl font-semibold text-center mb-4">Join the Community!</h3>
+                        <form id="login-form">
+                            <div class="space-y-4">
+                                <input type="email" placeholder="Email Address" class="w-full p-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500" value="jeroen@example.com" required>
+                                <input type="password" placeholder="Password" class="w-full p-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500" value="password" required>
+                                <button type="submit" class="w-full bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition">Login</button>
+                                <p class="text-center text-sm text-gray-500">Don't have an account? <a href="#" class="font-semibold text-blue-500">Sign Up</a></p>
+                            </div>
+                        </form>
+                    `;
+                }
+            }
+        }
+    };
+
+    function openModal(type) {
+        const content = menuContent[type];
+        modalTitle.textContent = content.title;
+        modalBody.innerHTML = typeof content.html === 'function' ? content.html() : content.html;
+        genericModal.classList.remove('hidden-modal', 'pointer-events-none');
+
+        if (type === 'profile' && !isLoggedIn) {
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    isLoggedIn = true;
+                    openModal('profile');
+                });
+            }
+        }
+        if (type === 'profile' && isLoggedIn) {
+            const logoutButton = document.getElementById('logout-button');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', () => {
+                    isLoggedIn = false;
+                    openModal('profile');
+                });
+            }
+        }
+    }
+    
+    function closeModal() {
+        genericModal.classList.add('hidden-modal', 'pointer-events-none');
+        layersMenu.classList.add('hidden-modal', 'pointer-events-none');
+        if (layersMenu.querySelector('.modal-content')) {
+            layersMenu.querySelector('.modal-content').classList.add('translate-x-full');
+        }
+    }
+
+    function showToast(message) {
+        toast.textContent = message;
+        toast.classList.remove('opacity-0', 'translate-x-10');
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-x-10');
+        }, 3000);
+    }
+
+    function startNavigation() {
+        if (searchHeader) searchHeader.classList.add('-translate-y-full');
+        if (bottomNav) bottomNav.classList.add('translate-y-full');
+        if (actionButtons) actionButtons.classList.add('translate-x-full', 'opacity-0');
+        if (routeInfoDiv) routeInfoDiv.classList.add('hidden-card');
+
+        if (navigationHeader) navigationHeader.classList.remove('-translate-y-full');
+        if (navigationFooter) navigationFooter.classList.remove('hidden-card');
+
+        currentStep = 0;
+        updateNavHeader();
+        isNavigating = true;
+        
+        navigationInterval = setInterval(() => {
+            currentStep++;
+            if (currentStep >= mockDirections.length) {
+                clearInterval(navigationInterval);
+                navigationInterval = null;
+                endNavigation();
+            } else {
+                updateNavHeader();
+                moveGpsDot();
+            }
+        }, 4000);
+    }
+
+    function endNavigation() {
+        if (navigationInterval) {
+            clearInterval(navigationInterval);
+            navigationInterval = null;
+        }
+        if (searchHeader) searchHeader.classList.remove('-translate-y-full');
+        if (bottomNav) bottomNav.classList.remove('translate-y-full');
+        if (actionButtons) actionButtons.classList.remove('translate-x-full', 'opacity-0');
+        
+        if (navigationHeader) navigationHeader.classList.add('-translate-y-full');
+        if (navigationFooter) navigationFooter.classList.add('hidden-card');
+        if (gpsDot) {
+            gpsDot.style.top = '50%';
+            gpsDot.style.left = '50%';
+        }
+        isNavigating = false;
+    }
+
+    function updateNavHeader() {
+        if (navigationHeader && currentStep < mockDirections.length) {
+            const headerContent = navigationHeader.querySelector('div');
+            if (headerContent) {
+                headerContent.innerHTML = `
+                    <p class="text-lg font-semibold">${mockDirections[currentStep].instruction}</p>
+                    <p class="text-2xl font-bold">${mockDirections[currentStep].street}</p>
+                `;
+            }
+        }
+    }
+
+    function moveGpsDot() {
+        if (gpsDot) {
+            const mapRect = document.getElementById('map').getBoundingClientRect();
+            const newTop = Math.random() * (mapRect.height * 0.6) + (mapRect.height * 0.2);
+            const newLeft = Math.random() * (mapRect.width * 0.6) + (mapRect.width * 0.2);
+            gpsDot.style.top = `${newTop}px`;
+            gpsDot.style.left = `${newLeft}px`;
+        }
+    }
+
+    // Override getRoute function to show new UI elements
+    const originalGetRoute = window.getRoute || getRoute;
+    window.getRoute = function() {
+        // Call original getRoute function
+        if (originalGetRoute) {
+            originalGetRoute();
+        }
+        
+        // Show route info card with new UI
+        setTimeout(() => {
+            const routeInfo = document.getElementById('route-info');
+            if (routeInfo) {
+                routeInfo.classList.remove('hidden-card');
+                
+                // Update route info with actual data if available
+                const routeData = routeInfoDiv.textContent;
+                if (routeData && routeData.trim()) {
+                    // Extract time and distance from existing route info
+                    const timeMatch = routeData.match(/(\d+)\s*min/i);
+                    const distMatch = routeData.match(/([\d.]+)\s*km/i);
+                    
+                    if (timeMatch || distMatch) {
+                        const routeCard = routeInfo.querySelector('.max-w-md');
+                        if (routeCard) {
+                            const timeText = timeMatch ? timeMatch[1] : '15';
+                            const distText = distMatch ? distMatch[1] : '5.2';
+                            
+                            routeCard.querySelector('.text-2xl').textContent = timeText;
+                            routeCard.querySelectorAll('.text-2xl')[1].textContent = distText;
+                        }
+                    }
+                }
+            }
+        }, 500);
+    };
+
+    // Event Listeners for new UI elements
+    if (modalCloseButton) {
+        modalCloseButton.addEventListener('click', closeModal);
+    }
+    
+    if (layersCloseButton) {
+        layersCloseButton.addEventListener('click', closeModal);
+    }
+    
+    if (genericModal) {
+        genericModal.addEventListener('click', (e) => {
+            if (e.target === genericModal) {
+                closeModal();
+            }
+        });
+    }
+
+    // Navigation menu buttons
+    const savedMenuButton = document.getElementById('saved-menu-button');
+    const recentsMenuButton = document.getElementById('recents-menu-button');
+    const profileMenuButton = document.getElementById('profile-menu-button');
+    const homeButton = document.getElementById('home-button');
+
+    if (savedMenuButton) {
+        savedMenuButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal('saved');
+        });
+    }
+    
+    if (recentsMenuButton) {
+        recentsMenuButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal('recents');
+        });
+    }
+    
+    if (profileMenuButton) {
+        profileMenuButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal('profile');
+        });
+    }
+
+    if (homeButton) {
+        homeButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Set active state
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            homeButton.classList.add('active');
+        });
+    }
+
+    // Settings menu integration with existing settings modal
+    const settingsMenuButton = document.getElementById('settings-menu-button');
+    if (settingsMenuButton) {
+        settingsMenuButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal('settings');
+        });
+    }
+
+    // Navigation buttons
+    if (startNavButton) {
+        startNavButton.addEventListener('click', startNavigation);
+    }
+    
+    if (endNavButton) {
+        endNavButton.addEventListener('click', endNavigation);
+    }
+    
+    if (closeRouteInfoButton) {
+        closeRouteInfoButton.addEventListener('click', () => {
+            const routeInfo = document.getElementById('route-info');
+            if (routeInfo) {
+                routeInfo.classList.add('hidden-card');
+            }
+        });
+    }
+
+    // Report functionality
+    const reportMainButton = document.getElementById('report-main-button');
+    const reportOptions = document.getElementById('report-options');
+    
+    if (reportMainButton && reportOptions) {
+        let reportMenuOpen = false;
+        
+        reportMainButton.addEventListener('click', () => {
+            reportMenuOpen = !reportMenuOpen;
+            if (reportMenuOpen) {
+                reportOptions.style.display = 'flex';
+                reportMainButton.style.transform = 'rotate(45deg)';
+            } else {
+                reportOptions.style.display = 'none';
+                reportMainButton.style.transform = 'rotate(0deg)';
+            }
+        });
+
+        // Report option buttons
+        document.querySelectorAll('.report-option').forEach(button => {
+            button.addEventListener('click', () => {
+                const reportType = button.dataset.reportType;
+                showToast(`${reportType} reported!`);
+                
+                // Close report menu
+                reportOptions.style.display = 'none';
+                reportMainButton.style.transform = 'rotate(0deg)';
+                reportMenuOpen = false;
+            });
+        });
+    }
+
+    // Layers menu
+    const layersMenuButton = document.getElementById('layers-menu-button');
+    if (layersMenuButton && layersMenu) {
+        layersMenuButton.addEventListener('click', () => {
+            layersMenu.classList.remove('hidden-modal', 'pointer-events-none');
+            const modalContent = layersMenu.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.classList.remove('translate-x-full');
+            }
+        });
+    }
+
+    // Map style buttons
+    document.querySelectorAll('.map-style-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const style = button.dataset.style;
+            showToast(`Map style changed to ${style}`);
+            closeModal();
+        });
+    });
+
+    // Integrate with existing routing - trigger Get Route when inputs change
+    if (startInput && endInput) {
+        const triggerRoute = () => {
+            const startValue = startInput.value.trim();
+            const endValue = endInput.value.trim();
+            
+            if (startValue && endValue && startValue !== 'Current Location' && startValue !== 'Where to?') {
+                // Simulate clicking the hidden get route button
+                if (typeof getRoute === 'function') {
+                    setTimeout(() => {
+                        getRoute();
+                    }, 500);
+                }
+            }
+        };
+
+        startInput.addEventListener('blur', triggerRoute);
+        endInput.addEventListener('blur', triggerRoute);
+        endInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                triggerRoute();
+            }
+        });
+    }
+
+    // Escape key handler
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            if (isNavigating) {
+                endNavigation();
+            }
+        }
+    });
+
+    console.log('Mobile UI initialized');
 });
