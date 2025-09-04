@@ -362,6 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
             timeString = `${minutes}m`;
         }
         
+        // Update legacy route info div
         routeInfoDiv.innerHTML = `
             <div class="route-info-header">
                 <span class="route-info-icon">🗺️</span>
@@ -385,7 +386,32 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
         
-        // Add animation
+        // Update new UI route info card
+        const newRouteInfoCard = document.getElementById('route-info');
+        if (newRouteInfoCard) {
+            // Show the route info card
+            newRouteInfoCard.classList.remove('hidden-card');
+            
+            // Update the time and distance in the new UI
+            const timeElement = newRouteInfoCard.querySelector('.text-2xl');
+            const distanceElement = newRouteInfoCard.querySelectorAll('.text-2xl')[1];
+            
+            if (timeElement) {
+                timeElement.textContent = minutes.toString();
+            }
+            if (distanceElement) {
+                distanceElement.textContent = distanceKm;
+            }
+            
+            // Update destination name to reflect end location
+            const destinationElement = newRouteInfoCard.querySelector('h2');
+            if (destinationElement && endInput.value) {
+                destinationElement.textContent = endInput.value.length > 20 ? 
+                    endInput.value.substring(0, 20) + '...' : endInput.value;
+            }
+        }
+        
+        // Add animation to legacy div
         routeInfoDiv.style.opacity = '0';
         routeInfoDiv.style.transform = 'translateY(20px)';
         setTimeout(() => {
@@ -408,6 +434,16 @@ document.addEventListener('DOMContentLoaded', () => {
         clearIndividualMarkers();
         routeInfoDiv.innerHTML = '';
         errorMessageDiv.style.display = 'none';
+        
+        // Hide new UI route info card
+        const newRouteInfoCard = document.getElementById('route-info');
+        if (newRouteInfoCard) {
+            newRouteInfoCard.classList.add('hidden-card');
+        }
+        
+        // Clear input fields
+        if (startInput) startInput.value = 'Current Location';
+        if (endInput) endInput.value = '';
     };
 
     const setApiStatus = (status) => {
@@ -1322,33 +1358,42 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsModal.style.display = 'none';
     };
 
-    // Navigation event listeners
-    menuBtn.addEventListener('click', showNavMenu);
+    // Navigation event listeners (with null checks)
+    if (menuBtn) {
+        menuBtn.addEventListener('click', showNavMenu);
+    }
     
-    // Navigation menu item clicks
-    navMenu.addEventListener('click', (e) => {
-        const navItem = e.target.closest('.nav-item');
-        if (navItem) {
-            e.preventDefault();
-            const action = navItem.dataset.action;
-            handleNavAction(action);
-        }
-    });
+    // Navigation menu item clicks (with null checks)
+    if (navMenu) {
+        navMenu.addEventListener('click', (e) => {
+            const navItem = e.target.closest('.nav-item');
+            if (navItem) {
+                e.preventDefault();
+                const action = navItem.dataset.action;
+                handleNavAction(action);
+            }
+        });
+    }
     
-    // Hide menu when clicking outside
+    // Hide menu when clicking outside (with null checks)
     document.addEventListener('click', (e) => {
-        if (!menuBtn.contains(e.target) && !navMenu.contains(e.target)) {
+        if (menuBtn && navMenu && !menuBtn.contains(e.target) && !navMenu.contains(e.target)) {
             hideNavMenu();
         }
     });
 
-    // Settings event listeners (updated to remove settingsBtn reference)
-    settingsModalClose.addEventListener('click', hideSettingsModal);
-    settingsModal.addEventListener('click', (e) => {
-        if (e.target === settingsModal) {
-            hideSettingsModal();
-        }
-    });
+    // Settings event listeners (updated to remove settingsBtn reference and add null checks)
+    if (settingsModalClose) {
+        settingsModalClose.addEventListener('click', hideSettingsModal);
+    }
+    
+    if (settingsModal) {
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                hideSettingsModal();
+            }
+        });
+    }
 
     // Settings checkbox event listeners
     Object.keys(settingsConfig).forEach(key => {
@@ -1779,10 +1824,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (closeRouteInfoButton) {
         closeRouteInfoButton.addEventListener('click', () => {
-            const routeInfo = document.getElementById('route-info');
-            if (routeInfo) {
-                routeInfo.classList.add('hidden-card');
-            }
+            // Clear the entire route, not just hide the card
+            clearRoute();
         });
     }
 
@@ -1845,8 +1888,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const startValue = startInput.value.trim();
             const endValue = endInput.value.trim();
             
-            if (startValue && endValue && startValue !== 'Current Location' && startValue !== 'Where to?') {
-                // Simulate clicking the hidden get route button
+            // Trigger route if both fields have meaningful values
+            if (startValue && endValue && 
+                startValue !== 'Current Location' && 
+                startValue !== 'Where to?' && 
+                endValue !== 'Current Location' && 
+                endValue !== 'Where to?' &&
+                endValue !== '') {
+                
+                console.log('Auto-triggering route calculation...');
+                // Call the route function directly
                 if (typeof getRoute === 'function') {
                     setTimeout(() => {
                         getRoute();
@@ -1862,6 +1913,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 triggerRoute();
             }
         });
+        
+        // Also add immediate route calculation on input change for better UX
+        let routeTimeout;
+        const delayedTriggerRoute = () => {
+            clearTimeout(routeTimeout);
+            routeTimeout = setTimeout(triggerRoute, 1000); // Wait 1 second after typing stops
+        };
+        
+        startInput.addEventListener('input', delayedTriggerRoute);
+        endInput.addEventListener('input', delayedTriggerRoute);
     }
 
     // Escape key handler
