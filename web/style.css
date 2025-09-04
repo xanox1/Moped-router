@@ -14,7 +14,6 @@ body, html {
 
 #map {
     background: linear-gradient(135deg, #374151 0%, #4B5563 100%);
-    z-index: 1; /* Establish base layer for map */
 }
 
 /* Fallback when map doesn't load */
@@ -325,8 +324,6 @@ body, html {
 
 #gps-dot {
     animation: pulse 2s infinite;
-    z-index: 5; /* Above map but below UI elements */
-    pointer-events: none; /* Allow clicks to pass through to map below */
 }
 
 /* Hide elements for clean mobile layout */
