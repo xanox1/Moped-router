@@ -139,6 +139,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (routeLayer) {
             routeLayer.clearLayers();
         }
+        // Clear individual point markers to avoid double markers
+        clearIndividualMarkers();
+        
         routeInfoDiv.innerHTML = '';
         errorMessageDiv.style.display = 'none';
 
@@ -528,11 +531,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
 
+        // Simple pin icon - smaller and cleaner
         const icon = L.divIcon({
-            className: `custom-marker ${isStartPoint ? 'start-marker' : 'end-marker'}`,
-            html: `<div class="marker-content"><span class="marker-icon">${isStartPoint ? '🏁' : '🎯'}</span><span class="marker-label">${isStartPoint ? 'Start' : 'End'}</span></div>`,
-            iconSize: [80, 40],
-            iconAnchor: [40, 40]
+            className: `simple-pin-marker ${isStartPoint ? 'start-pin' : 'end-pin'}`,
+            html: `<div class="pin-content">${isStartPoint ? '📍' : '🎯'}</div>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 24]
         });
 
         const marker = L.marker([lat, lng], { icon }).addTo(map);
@@ -589,6 +593,16 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Clear the map click status
         clearMapClickStatus();
+        
+        // Auto-route if both start and end points are set
+        const startValue = startInput.value.trim();
+        const endValue = endInput.value.trim();
+        if (startValue && endValue && startValue !== '🔍 Getting address...' && endValue !== '🔍 Getting address...') {
+            // Small delay to let the user see the feedback, then auto-route
+            setTimeout(() => {
+                getRoute();
+            }, 1000);
+        }
     };
 
     const handleMapClick = async (e) => {
