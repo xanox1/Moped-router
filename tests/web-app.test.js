@@ -553,11 +553,11 @@ describe('Enhanced Context Menu Features', () => {
 });
 
 describe('Settings Menu Functionality', () => {
-  test('should have settings button in HTML', () => {
+  test('should have menu button in HTML', () => {
     const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
-    expect(htmlContent).toContain('id="settings-btn"');
-    expect(htmlContent).toContain('class="settings-btn"');
-    expect(htmlContent).toContain('⚙️');
+    expect(htmlContent).toContain('id="menu-btn"');
+    expect(htmlContent).toContain('class="menu-btn"');
+    expect(htmlContent).toContain('hamburger-line');
   });
 
   test('should have settings modal HTML elements', () => {

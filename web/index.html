@@ -16,28 +16,75 @@
         <div class="controls">
             <div class="header-section">
                 <h1>Moped Router</h1>
-                <button id="settings-btn" class="settings-btn" title="Settings">⚙️</button>
+                <button id="menu-btn" class="menu-btn" title="Menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
             </div>
             
-            <!-- User Avatar/Mood Section -->
+            <!-- Navigation Menu -->
+            <nav id="nav-menu" class="nav-menu" style="display: none;">
+                <div class="nav-section">
+                    <h3 class="nav-title">Account</h3>
+                    <a href="#" class="nav-item" data-action="login">
+                        <span class="nav-icon">👤</span>
+                        <span>Sign In</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="signup">
+                        <span class="nav-icon">📝</span>
+                        <span>Sign Up</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="profile">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Profile Settings</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <h3 class="nav-title">Application</h3>
+                    <a href="#" class="nav-item" data-action="app-settings">
+                        <span class="nav-icon">🔧</span>
+                        <span>App Settings</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="preferences">
+                        <span class="nav-icon">🎛️</span>
+                        <span>Preferences</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <h3 class="nav-title">Help & Info</h3>
+                    <a href="#" class="nav-item" data-action="about">
+                        <span class="nav-icon">ℹ️</span>
+                        <span>About</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="help">
+                        <span class="nav-icon">❓</span>
+                        <span>Help & Support</span>
+                    </a>
+                    <a href="#" class="nav-item" data-action="privacy">
+                        <span class="nav-icon">🔒</span>
+                        <span>Privacy Policy</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <!-- User Profile Section -->
             <div class="user-section" id="user-section">
-                <div class="avatar-container">
-                    <div class="avatar" id="user-avatar">😊</div>
-                    <div class="user-info">
-                        <span class="username">Rider #123</span>
-                        <div class="points-display">
-                            <span class="points-icon">⭐</span>
-                            <span class="points-text" id="user-points">1,247 pts</span>
+                <div class="profile-container">
+                    <div class="profile-avatar">
+                        <div class="avatar-circle">
+                            <span class="avatar-initials">R</span>
                         </div>
                     </div>
-                </div>
-                <div class="mood-selector">
-                    <span class="mood-option" data-mood="😊">😊</span>
-                    <span class="mood-option" data-mood="😎">😎</span>
-                    <span class="mood-option" data-mood="🤠">🤠</span>
-                    <span class="mood-option" data-mood="🥳">🥳</span>
-                    <span class="mood-option" data-mood="😴">😴</span>
-                    <span class="mood-option" data-mood="🤓">🤓</span>
+                    <div class="profile-info">
+                        <span class="username">Rider #123</span>
+                        <div class="user-stats">
+                            <span class="stat-value">1,247</span>
+                            <span class="stat-label">Points</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="input-group">
@@ -58,19 +105,22 @@
             
             <!-- Community Reporting Section -->
             <div class="community-section" id="community-section">
-                <h3>🚨 Report Road Conditions</h3>
-                <div class="report-buttons">
+                <h3>Report Road Conditions</h3>
+                <div class="report-grid">
                     <button class="report-btn traffic-btn" data-type="traffic">
-                        🚗 Traffic
-                        <span class="points-reward">+5 pts</span>
+                        <span class="report-icon">🚗</span>
+                        <span class="report-text">Traffic</span>
+                        <span class="points-badge">+5</span>
                     </button>
                     <button class="report-btn police-btn" data-type="police">
-                        👮 Police
-                        <span class="points-reward">+10 pts</span>
+                        <span class="report-icon">👮</span>
+                        <span class="report-text">Police</span>
+                        <span class="points-badge">+10</span>
                     </button>
                     <button class="report-btn hazard-btn" data-type="hazard">
-                        ⚠️ Hazard
-                        <span class="points-reward">+15 pts</span>
+                        <span class="report-icon">⚠️</span>
+                        <span class="report-text">Hazard</span>
+                        <span class="points-badge">+15</span>
                     </button>
                 </div>
             </div>
@@ -86,26 +136,38 @@
             
             <!-- Achievement Section -->
             <div class="achievements-section" id="achievements-section">
-                <h3>🏆 Recent Achievements</h3>
-                <div class="achievement-badges">
-                    <div class="badge earned" title="First Route Planned">🗺️</div>
-                    <div class="badge earned" title="Community Helper">🤝</div>
-                    <div class="badge" title="Speed Demon - 100 routes">🏎️</div>
-                    <div class="badge" title="Explorer - 10 cities">🌍</div>
+                <h3>Recent Achievements</h3>
+                <div class="achievement-grid">
+                    <div class="achievement-card earned" title="First Route Planned">
+                        <div class="achievement-icon">🗺️</div>
+                        <div class="achievement-name">Navigator</div>
+                    </div>
+                    <div class="achievement-card earned" title="Community Helper">
+                        <div class="achievement-icon">🤝</div>
+                        <div class="achievement-name">Helper</div>
+                    </div>
+                    <div class="achievement-card locked" title="Speed Demon - 100 routes">
+                        <div class="achievement-icon">🏎️</div>
+                        <div class="achievement-name">Speed Demon</div>
+                    </div>
+                    <div class="achievement-card locked" title="Explorer - 10 cities">
+                        <div class="achievement-icon">🌍</div>
+                        <div class="achievement-name">Explorer</div>
+                    </div>
                 </div>
             </div>
             
             <!-- Community Stats -->
             <div class="community-stats" id="community-stats">
-                <h3>📊 Community Activity</h3>
+                <h3>Community Activity</h3>
                 <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-number">42</span>
-                        <span class="stat-label">Reports Today</span>
+                    <div class="stat-card">
+                        <div class="stat-number">42</div>
+                        <div class="stat-label">Reports Today</div>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-number">1,337</span>
-                        <span class="stat-label">Active Riders</span>
+                    <div class="stat-card">
+                        <div class="stat-number">1,337</div>
+                        <div class="stat-label">Active Riders</div>
                     </div>
                 </div>
             </div>
