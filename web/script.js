@@ -259,26 +259,148 @@ document.addEventListener('DOMContentLoaded', () => {
         // GeoJSON coordinates are [lon, lat], Leaflet needs [lat, lon]
         const latLngs = coordinates.map(coord => [coord[1], coord[0]]);
 
-        const polyline = L.polyline(latLngs, {
-            color: '#007bff',
-            weight: 5
+        // Enhanced polyline with gradient-like effect using multiple layers
+        const mainPolyline = L.polyline(latLngs, {
+            color: '#4caf50',
+            weight: 6,
+            opacity: 0.8,
+            lineJoin: 'round',
+            lineCap: 'round'
         }).addTo(routeLayer);
 
-        // Add markers for start and end
-        L.marker(latLngs[0]).addTo(routeLayer).bindPopup('Start');
-        L.marker(latLngs[latLngs.length - 1]).addTo(routeLayer).bindPopup('End');
+        // Add a subtle shadow/outline effect
+        const shadowPolyline = L.polyline(latLngs, {
+            color: '#2e7d32',
+            weight: 8,
+            opacity: 0.4,
+            lineJoin: 'round',
+            lineCap: 'round'
+        }).addTo(routeLayer);
+        
+        // Ensure main line is on top
+        shadowPolyline.bringToBack();
 
-        map.fitBounds(polyline.getBounds().pad(0.1));
+        // Enhanced start marker with custom styling
+        const startIcon = L.divIcon({
+            className: 'custom-marker start-marker',
+            html: '<div class="marker-content"><span class="marker-icon">🏁</span><span class="marker-label">Start</span></div>',
+            iconSize: [80, 40],
+            iconAnchor: [40, 40]
+        });
+
+        // Enhanced end marker with custom styling
+        const endIcon = L.divIcon({
+            className: 'custom-marker end-marker',
+            html: '<div class="marker-content"><span class="marker-icon">🎯</span><span class="marker-label">Destination</span></div>',
+            iconSize: [80, 40],
+            iconAnchor: [40, 40]
+        });
+
+        // Add interactive markers
+        const startMarker = L.marker(latLngs[0], { icon: startIcon }).addTo(routeLayer);
+        const endMarker = L.marker(latLngs[latLngs.length - 1], { icon: endIcon }).addTo(routeLayer);
+
+        // Add click events to markers for address display
+        startMarker.on('click', async () => {
+            try {
+                const address = await reverseGeocode(latLngs[0][0], latLngs[0][1]);
+                startMarker.bindPopup(`<strong>Starting Point</strong><br>${address}`).openPopup();
+            } catch (error) {
+                startMarker.bindPopup(`<strong>Starting Point</strong><br>${latLngs[0][0].toFixed(6)}, ${latLngs[0][1].toFixed(6)}`).openPopup();
+            }
+        });
+
+        endMarker.on('click', async () => {
+            try {
+                const address = await reverseGeocode(latLngs[latLngs.length - 1][0], latLngs[latLngs.length - 1][1]);
+                endMarker.bindPopup(`<strong>Destination</strong><br>${address}`).openPopup();
+            } catch (error) {
+                endMarker.bindPopup(`<strong>Destination</strong><br>${latLngs[latLngs.length - 1][0].toFixed(6)}, ${latLngs[latLngs.length - 1][1].toFixed(6)}`).openPopup();
+            }
+        });
+
+        // Add hover effects to the route line
+        mainPolyline.on('mouseover', function() {
+            this.setStyle({
+                weight: 8,
+                opacity: 1,
+                color: '#66bb6a'
+            });
+        });
+
+        mainPolyline.on('mouseout', function() {
+            this.setStyle({
+                weight: 6,
+                opacity: 0.8,
+                color: '#4caf50'
+            });
+        });
+
+        // Fit bounds with animation
+        map.fitBounds(mainPolyline.getBounds().pad(0.1), {
+            animate: true,
+            duration: 1.0
+        });
     };
 
     const displayRouteInfo = (distance, time) => {
         const distanceKm = (distance / 1000).toFixed(2);
         const durationMinutes = Math.round(time / 1000 / 60);
+        const hours = Math.floor(durationMinutes / 60);
+        const minutes = durationMinutes % 60;
+        
+        let timeString;
+        if (hours > 0) {
+            timeString = `${hours}h ${minutes}m`;
+        } else {
+            timeString = `${minutes}m`;
+        }
+        
+        // Calculate average speed
+        const avgSpeed = (distance / 1000) / (time / 1000 / 3600);
         
         routeInfoDiv.innerHTML = `
-            <strong>Distance:</strong> ${distanceKm} km<br>
-            <strong>Time:</strong> ${durationMinutes} minutes
+            <div class="route-info-header">
+                <span class="route-info-icon">🗺️</span>
+                <span class="route-info-title">Route Calculated</span>
+            </div>
+            <div class="route-info-grid">
+                <div class="route-info-item">
+                    <span class="info-icon">📏</span>
+                    <div class="info-content">
+                        <div class="info-value">${distanceKm} km</div>
+                        <div class="info-label">Distance</div>
+                    </div>
+                </div>
+                <div class="route-info-item">
+                    <span class="info-icon">⏱️</span>
+                    <div class="info-content">
+                        <div class="info-value">${timeString}</div>
+                        <div class="info-label">Est. Time</div>
+                    </div>
+                </div>
+                <div class="route-info-item">
+                    <span class="info-icon">🏍️</span>
+                    <div class="info-content">
+                        <div class="info-value">${avgSpeed.toFixed(1)} km/h</div>
+                        <div class="info-label">Avg Speed</div>
+                    </div>
+                </div>
+            </div>
+            <div class="route-info-note">
+                <span class="note-icon">ℹ️</span>
+                Route optimized for moped travel (max 45 km/h)
+            </div>
         `;
+        
+        // Add animation
+        routeInfoDiv.style.opacity = '0';
+        routeInfoDiv.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            routeInfoDiv.style.transition = 'all 0.5s ease-out';
+            routeInfoDiv.style.opacity = '1';
+            routeInfoDiv.style.transform = 'translateY(0)';
+        }, 100);
     };
     
     const showError = (message) => {
@@ -342,21 +464,109 @@ document.addEventListener('DOMContentLoaded', () => {
         startInput.classList.remove('map-click-active');
         endInput.classList.remove('map-click-active');
         
+        // Remove any existing status messages
+        clearMapClickStatus();
+        
         // Set new active field
         activeInputField = field;
         if (field) {
             field.classList.add('map-click-active');
+            showMapClickStatus(field);
         }
     };
 
-    const handleMapClick = (e) => {
+    const showMapClickStatus = (field) => {
+        // Create status indicator if it doesn't exist
+        let statusDiv = document.getElementById('map-click-status');
+        if (!statusDiv) {
+            statusDiv = document.createElement('div');
+            statusDiv.id = 'map-click-status';
+            statusDiv.className = 'map-click-status';
+            document.body.appendChild(statusDiv);
+        }
+        
+        const fieldName = field === startInput ? 'starting location' : 'destination';
+        statusDiv.innerHTML = `
+            <div class="status-content">
+                <span class="status-icon">📍</span>
+                <span class="status-text">Click on the map to select ${fieldName}</span>
+                <button class="status-close" onclick="this.parentElement.parentElement.style.display='none'">×</button>
+            </div>
+        `;
+        statusDiv.style.display = 'block';
+        
+        // Add pulsing animation to map area
+        const mapContainer = document.getElementById('map');
+        mapContainer.classList.add('map-click-mode');
+    };
+
+    const clearMapClickStatus = () => {
+        const statusDiv = document.getElementById('map-click-status');
+        if (statusDiv) {
+            statusDiv.style.display = 'none';
+        }
+        
+        // Remove pulsing animation from map
+        const mapContainer = document.getElementById('map');
+        mapContainer.classList.remove('map-click-mode');
+    };
+
+    const showLocationSetFeedback = (address) => {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = 'location-set-notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span class="notification-icon">✅</span>
+                <div class="notification-text">
+                    <strong>Location Set!</strong>
+                    <br>
+                    <small>${address.length > 50 ? address.substring(0, 47) + '...' : address}</small>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => notification.classList.add('show'), 100);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => document.body.removeChild(notification), 300);
+        }, 3000);
+        
+        // Clear the map click status
+        clearMapClickStatus();
+    };
+
+    const handleMapClick = async (e) => {
         if (activeInputField) {
             const lat = e.latlng.lat.toFixed(6);
             const lng = e.latlng.lng.toFixed(6);
-            activeInputField.value = `${lat},${lng}`;
             
-            // Clear active state after setting coordinates
-            setActiveField(null);
+            // Show loading state
+            activeInputField.value = '🔍 Getting address...';
+            activeInputField.disabled = true;
+            
+            try {
+                // Try to get address instead of coordinates
+                const address = await reverseGeocode(lat, lng);
+                activeInputField.value = address;
+                
+                // Show user feedback
+                showLocationSetFeedback(address);
+            } catch (error) {
+                console.error('Error getting address:', error);
+                // Fallback to coordinates
+                activeInputField.value = `${lat},${lng}`;
+                showLocationSetFeedback(`${lat},${lng}`);
+            } finally {
+                activeInputField.disabled = false;
+                // Clear active state after setting location
+                setActiveField(null);
+            }
         }
     };
 
@@ -762,32 +972,76 @@ document.addEventListener('DOMContentLoaded', () => {
         featureModalBody.textContent = '';
     };
 
+    const showAddressModal = (address, lat, lng) => {
+        const modalContent = `
+            📍 Location Information
+            
+            Address: ${address}
+            
+            Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}
+            
+            Click "Directions from here" or "Directions to here" in the context menu to use this location for routing.
+        `;
+        
+        featureModalBody.textContent = modalContent;
+        featureModal.style.display = 'flex';
+    };
+
     const handleContextMenuClick = async (action) => {
         if (!contextMenuCoords) return;
         
         const lat = contextMenuCoords.lat;
         const lng = contextMenuCoords.lng;
-        const coords = `${lat.toFixed(6)},${lng.toFixed(6)}`;
         
         hideContextMenu();
         
         switch (action) {
         case 'directions-from':
-            startInput.value = coords;
+            try {
+                // Show loading state
+                startInput.value = '🔍 Getting address...';
+                startInput.disabled = true;
+                
+                const address = await reverseGeocode(lat, lng);
+                startInput.value = address;
+                showLocationSetFeedback(address);
+            } catch (error) {
+                console.error('Error getting address:', error);
+                const coords = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+                startInput.value = coords;
+                showLocationSetFeedback(coords);
+            } finally {
+                startInput.disabled = false;
+            }
             setActiveField(null);
             break;
             
         case 'directions-to':
-            endInput.value = coords;
+            try {
+                // Show loading state
+                endInput.value = '🔍 Getting address...';
+                endInput.disabled = true;
+                
+                const address = await reverseGeocode(lat, lng);
+                endInput.value = address;
+                showLocationSetFeedback(address);
+            } catch (error) {
+                console.error('Error getting address:', error);
+                const coords = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+                endInput.value = coords;
+                showLocationSetFeedback(coords);
+            } finally {
+                endInput.disabled = false;
+            }
             setActiveField(null);
             break;
             
         case 'show-address':
             try {
                 const address = await reverseGeocode(lat, lng);
-                alert(`Address:\n${address}`);
+                showAddressModal(address, lat, lng);
             } catch (error) {
-                alert(`Error getting address: ${error.message}`);
+                showAddressModal(`Error getting address: ${error.message}`, lat, lng);
             }
             break;
             
