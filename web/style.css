@@ -14,6 +14,7 @@ body, html {
 
 #map {
     background: linear-gradient(135deg, #374151 0%, #4B5563 100%);
+    z-index: 1; /* Ensure map stays below all UI elements */
 }
 
 /* Fallback when map doesn't load */
