@@ -757,3 +757,108 @@ describe('Route Summary Modal Functionality', () => {
     expect(styleContent).toContain('flex-direction: column');
   });
 });
+
+// GPS Functionality Tests
+describe('GPS Functionality', () => {
+  beforeEach(() => {
+    // Set up DOM
+    document.body.innerHTML = `
+      <div id="map"></div>
+      <input id="start" type="text" value="Current Location">
+      <input id="end" type="text" value="">
+      <div id="gps-dot"></div>
+    `;
+
+    // Mock geolocation
+    global.navigator.geolocation = {
+      getCurrentPosition: jest.fn(),
+      watchPosition: jest.fn(),
+      clearWatch: jest.fn()
+    };
+  });
+
+  afterEach(() => {
+    delete global.navigator.geolocation;
+  });
+
+  test('should have GPS state variables defined', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('let currentPosition = null');
+    expect(scriptContent).toContain('let watchPositionId = null');
+    expect(scriptContent).toContain('let gpsEnabled = false');
+  });
+
+  test('should have getCurrentPosition function', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('const getCurrentPosition = () =>');
+    expect(scriptContent).toContain('navigator.geolocation');
+    expect(scriptContent).toContain('enableHighAccuracy: true');
+    expect(scriptContent).toContain('timeout: 10000');
+    expect(scriptContent).toContain('maximumAge: 60000');
+  });
+
+  test('should have GPS watch functions', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('const startWatchingPosition = () =>');
+    expect(scriptContent).toContain('const stopWatchingPosition = () =>');
+    expect(scriptContent).toContain('watchPosition');
+    expect(scriptContent).toContain('clearWatch');
+  });
+
+  test('should handle GPS errors appropriately', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('PERMISSION_DENIED');
+    expect(scriptContent).toContain('POSITION_UNAVAILABLE');
+    expect(scriptContent).toContain('TIMEOUT');
+    expect(scriptContent).toContain('GPS access denied by user');
+    expect(scriptContent).toContain('GPS position unavailable');
+    expect(scriptContent).toContain('GPS request timed out');
+  });
+
+  test('should have Current Location handling', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('handleCurrentLocationClick');
+    expect(scriptContent).toContain('📍 Getting your location...');
+    expect(scriptContent).toContain('Current Location');
+  });
+
+  test('should integrate GPS with navigation', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('startWatchingPosition');
+    expect(scriptContent).toContain('stopWatchingPosition');
+    expect(scriptContent).toContain('updateGpsPosition');
+    expect(scriptContent).toContain('if (!gpsEnabled)');
+  });
+
+  test('should have GPS status notifications', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('showGpsStatus');
+    expect(scriptContent).toContain('gps-status-notification');
+    expect(scriptContent).toContain('GPS Error');
+    expect(scriptContent).toContain('GPS Active');
+  });
+
+  test('should have GPS dot styling', () => {
+    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
+    expect(styleContent).toContain('#gps-dot');
+    expect(styleContent).toContain('gps-pulse');
+    expect(styleContent).toContain('@keyframes gps-pulse');
+    expect(styleContent).toContain('.animate-pulse');
+  });
+
+  test('should have GPS notification styling', () => {
+    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
+    expect(styleContent).toContain('.gps-status-notification');
+    expect(styleContent).toContain('.gps-notification-content');
+    expect(styleContent).toContain('.gps-notification-icon');
+    expect(styleContent).toContain('.gps-notification-text');
+  });
+
+  test('should have GPS dot in HTML', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('id="gps-dot"');
+    expect(htmlContent).toContain('GPS Location Dot');
+    expect(htmlContent).toContain('bg-blue-500');
+    expect(htmlContent).toContain('animate-pulse');
+  });
+});
