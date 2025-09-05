@@ -2707,7 +2707,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (startNavigationSummary) {
         startNavigationSummary.addEventListener('click', () => {
             hideRouteSummaryModal();
-            // You can add navigation start logic here
+            // Start navigation after closing modal
+            startNavigation();
             console.log('Navigation started from summary');
         });
     }

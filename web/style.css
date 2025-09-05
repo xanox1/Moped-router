@@ -103,7 +103,7 @@ body, html {
 }
 
 .hidden-card {
-    transform: translateY(100%);
+    display: none !important;
 }
 
 /* Modal styling */
@@ -768,6 +768,11 @@ body, html {
 /* Enhanced route info styling when populated */
 #route-info:not(:empty):not(.hidden-card) {
     transform: translateY(0);
+}
+
+/* Force route info to hide when navigation starts */
+#route-info.hidden-card {
+    display: none !important;
 }
 
 /* Map click status overlay for compatibility */
