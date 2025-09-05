@@ -100,6 +100,93 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Parse real navigation directions from GraphHopper API response
+    const parseRealDirections = (instructions) => {
+        realDirections = []; // Clear previous directions
+        
+        if (!instructions || instructions.length === 0) {
+            console.warn('No instructions received from API, will use mock directions if needed');
+            return;
+        }
+        
+        let totalRemainingKm = 0;
+        let totalRemainingTime = 0;
+        
+        // Calculate totals first
+        instructions.forEach(instruction => {
+            totalRemainingKm += instruction.distance / 1000; // Convert m to km
+            totalRemainingTime += instruction.time / 60000; // Convert ms to minutes
+        });
+        
+        let currentRemainingKm = totalRemainingKm;
+        let currentRemainingTime = totalRemainingTime;
+        
+        instructions.forEach((instruction) => {
+            const direction = {
+                instruction: instruction.text || 'Continue',
+                street: extractStreetName(instruction.text) || 'Unknown Street',
+                distance: formatDistance(instruction.distance),
+                icon: getIconFromSign(instruction.sign),
+                duration: Math.round(instruction.time / 60000) || 1, // Convert ms to minutes
+                remainingKm: Math.round(currentRemainingKm * 10) / 10,
+                remainingTime: Math.round(currentRemainingTime)
+            };
+            
+            realDirections.push(direction);
+            
+            // Update remaining for next iteration
+            currentRemainingKm -= instruction.distance / 1000;
+            currentRemainingTime -= instruction.time / 60000;
+        });
+        
+        console.log(`Parsed ${realDirections.length} real navigation directions`);
+    };
+    
+    // Helper function to extract street name from instruction text
+    const extractStreetName = (text) => {
+        if (!text) return 'Unknown Street';
+        
+        // Try to extract street name from common patterns
+        const patterns = [
+            /onto (.+)/i,
+            /on (.+)/i,
+            /into (.+)/i,
+            /towards (.+)/i
+        ];
+        
+        for (const pattern of patterns) {
+            const match = text.match(pattern);
+            if (match && match[1]) {
+                return match[1].split(',')[0].trim(); // Take first part before comma
+            }
+        }
+        
+        return text.split(' ').slice(-2).join(' '); // Last two words as fallback
+    };
+    
+    // Convert GraphHopper sign values to our icon names
+    const getIconFromSign = (sign) => {
+        if (sign === undefined || sign === null) return 'straight';
+        
+        // GraphHopper sign conventions (approximate)
+        if (sign < -1) return 'left';  // Left turns
+        if (sign > 1) return 'right';  // Right turns
+        if (sign === 0 || sign === 1) return 'straight'; // Straight
+        if (sign === -99) return 'finish'; // Arrived at destination
+        
+        return 'straight'; // Default
+    };
+    
+    // Format distance in meters to human readable format
+    const formatDistance = (distanceInMeters) => {
+        if (distanceInMeters >= 1000) {
+            const km = (distanceInMeters / 1000).toFixed(1);
+            return `${km} km`;
+        } else {
+            return `${Math.round(distanceInMeters)} m`;
+        }
+    };
+
     // --- GPS Functions ---
     const getCurrentPosition = () => {
         return new Promise((resolve, reject) => {
@@ -318,6 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
             url.searchParams.append('point', resolvedEnd);
             url.searchParams.append('profile', 'moped');
             url.searchParams.append('points_encoded', 'false'); // We want GeoJSON coordinates
+            url.searchParams.append('instructions', 'true'); // Get turn-by-turn directions
             
             // Always disable CH and add comprehensive moped access blocking rules
             url.searchParams.append('ch.disable', 'true');
@@ -397,6 +485,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const path = data.paths[0];
+            
+            // Extract real navigation directions from API response
+            parseRealDirections(path.instructions || []);
+            
             drawRoute(path.points.coordinates);
             displayRouteInfo(path.distance, path.time);
             
@@ -2065,6 +2157,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentStep = 0;
     let voiceNavigationEnabled = true;
     let demoMode = localStorage.getItem('demoMode') === 'true' || false;
+    let realDirections = []; // Store real turn-by-turn directions from API
     
     // Mock navigation directions with enhanced data
     const mockDirections = [
@@ -2269,6 +2362,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Get the appropriate directions array to use for navigation
+    const getDirectionsToUse = () => {
+        // Use real directions if available and not in demo mode
+        if (!demoMode && realDirections.length > 0) {
+            return realDirections;
+        }
+        // Fall back to mock directions (used in demo mode or when no real directions)
+        return mockDirections;
+    };
+
     function startNavigation() {
         if (searchHeader) searchHeader.classList.add('-translate-y-full');
         if (bottomNav) bottomNav.classList.add('translate-y-full');
@@ -2290,7 +2393,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         navigationInterval = setInterval(() => {
             currentStep++;
-            if (currentStep >= mockDirections.length) {
+            const directionsToUse = getDirectionsToUse();
+            if (currentStep >= directionsToUse.length) {
                 clearInterval(navigationInterval);
                 navigationInterval = null;
                 endNavigation();
@@ -2303,7 +2407,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Show voice notification if enabled
                 if (voiceNavigationEnabled) {
-                    const step = mockDirections[currentStep];
+                    const step = directionsToUse[currentStep];
                     showToast(`${step.distance} - ${step.instruction}`);
                 }
             }
@@ -2334,7 +2438,8 @@ document.addEventListener('DOMContentLoaded', () => {
         isNavigating = false;
         
         // Show completion notification
-        if (currentStep >= mockDirections.length) {
+        const directionsToUse = getDirectionsToUse();
+        if (currentStep >= directionsToUse.length) {
             showToast('You have arrived at your destination!');
         } else {
             showToast('Navigation ended');
@@ -2342,8 +2447,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateNavHeader() {
-        if (navigationHeader && currentStep < mockDirections.length) {
-            const step = mockDirections[currentStep];
+        const directionsToUse = getDirectionsToUse();
+        if (navigationHeader && currentStep < directionsToUse.length) {
+            const step = directionsToUse[currentStep];
             const turnIconContainer = document.getElementById('turn-icon-container');
             const turnDistance = document.getElementById('turn-distance');
             const turnStreet = document.getElementById('turn-street');
