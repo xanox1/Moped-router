@@ -2044,7 +2044,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalCloseButton = document.getElementById('modal-close-button');
     const layersMenu = document.getElementById('layers-menu');
     const layersCloseButton = document.getElementById('layers-close-button');
-    const toast = document.getElementById('toast');
     
     // Navigation elements
     const searchHeader = document.getElementById('search-header');
@@ -2064,15 +2063,64 @@ document.addEventListener('DOMContentLoaded', () => {
     let isNavigating = false;
     let navigationInterval = null;
     let currentStep = 0;
+    let voiceNavigationEnabled = true;
     
-    // Mock navigation directions
+    // Mock navigation directions with enhanced data
     const mockDirections = [
-        { instruction: 'Head north on Amsterdam Street', street: 'Amsterdam Street' },
-        { instruction: 'In 200m, turn right', street: 'Main Street' },
-        { instruction: 'Continue straight', street: 'Main Street' },
-        { instruction: 'In 500m, turn left', street: 'Utrecht Avenue' },
-        { instruction: 'Destination reached', street: 'Central Park' }
+        { 
+            instruction: 'Head north on Amsterdam Street', 
+            street: 'Amsterdam Street',
+            distance: '200 m',
+            icon: 'straight',
+            duration: 15,
+            remainingKm: 5.2,
+            remainingTime: 15
+        },
+        { 
+            instruction: 'Turn right onto Main Street', 
+            street: 'Main Street',
+            distance: '1.2 km',
+            icon: 'right',
+            duration: 13,
+            remainingKm: 4.0,
+            remainingTime: 13
+        },
+        { 
+            instruction: 'Turn left onto Utrecht Avenue', 
+            street: 'Utrecht Avenue',
+            distance: '300 m',
+            icon: 'left',
+            duration: 8,
+            remainingKm: 2.8,
+            remainingTime: 8
+        },
+        { 
+            instruction: 'Continue straight on Elm Street', 
+            street: 'Elm Street',
+            distance: '800 m',
+            icon: 'straight',
+            duration: 6,
+            remainingKm: 2.0,
+            remainingTime: 6
+        },
+        { 
+            instruction: 'Destination reached', 
+            street: 'Central Park',
+            distance: 'You have arrived',
+            icon: 'finish',
+            duration: 0,
+            remainingKm: 0.0,
+            remainingTime: 0
+        }
     ];
+
+    // Turn icons for navigation
+    const turnIcons = {
+        right: '<svg class="w-12 h-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12.75 15l3-3m0 0l-3-3m3 3h-7.5a6 6 0 00-6 6v1.5" /></svg>',
+        left: '<svg class="w-12 h-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 9l-3 3m0 0l3 3m-3-3h7.5a6 6 0 016 6v1.5" /></svg>',
+        straight: '<svg class="w-12 h-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75" /></svg>',
+        finish: '<svg class="w-12 h-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>'
+    };
     
     // Menu content configuration
     const menuContent = {
@@ -2172,11 +2220,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showToast(message) {
-        toast.textContent = message;
-        toast.classList.remove('opacity-0', 'translate-x-10');
-        setTimeout(() => {
-            toast.classList.add('opacity-0', 'translate-x-10');
-        }, 3000);
+        const toast = document.getElementById('toast');
+        if (toast) {
+            toast.textContent = message;
+            toast.classList.remove('opacity-0', 'translate-x-10');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-10');
+            }, 3000);
+        }
     }
 
     function startNavigation() {
@@ -2195,6 +2246,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Start GPS tracking for real navigation
         startWatchingPosition();
         
+        // Show navigation start notification
+        showToast('Navigation started');
+        
         navigationInterval = setInterval(() => {
             currentStep++;
             if (currentStep >= mockDirections.length) {
@@ -2207,8 +2261,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!gpsEnabled) {
                     moveGpsDot();
                 }
+                
+                // Show voice notification if enabled
+                if (voiceNavigationEnabled) {
+                    const step = mockDirections[currentStep];
+                    showToast(`${step.distance} - ${step.instruction}`);
+                }
             }
-        }, 4000);
+        }, 5000); // Increase interval to 5 seconds for better demo
     }
 
     function endNavigation() {
@@ -2233,17 +2293,63 @@ document.addEventListener('DOMContentLoaded', () => {
             gpsDot.style.display = 'none';
         }
         isNavigating = false;
+        
+        // Show completion notification
+        if (currentStep >= mockDirections.length) {
+            showToast('You have arrived at your destination!');
+        } else {
+            showToast('Navigation ended');
+        }
     }
 
     function updateNavHeader() {
         if (navigationHeader && currentStep < mockDirections.length) {
-            const headerContent = navigationHeader.querySelector('div');
-            if (headerContent) {
-                headerContent.innerHTML = `
-                    <p class="text-lg font-semibold">${mockDirections[currentStep].instruction}</p>
-                    <p class="text-2xl font-bold">${mockDirections[currentStep].street}</p>
-                `;
-            }
+            const step = mockDirections[currentStep];
+            const turnIconContainer = document.getElementById('turn-icon-container');
+            const turnDistance = document.getElementById('turn-distance');
+            const turnStreet = document.getElementById('turn-street');
+            
+            // Animate card out
+            navigationHeader.style.transform = 'translateY(-150%)';
+            
+            setTimeout(() => {
+                // Update content
+                if (turnIconContainer) {
+                    turnIconContainer.innerHTML = turnIcons[step.icon] || turnIcons.straight;
+                }
+                if (turnDistance) {
+                    turnDistance.textContent = step.distance;
+                }
+                if (turnStreet) {
+                    turnStreet.textContent = step.instruction;
+                }
+                
+                // Animate card back in
+                navigationHeader.style.transform = 'translateY(0)';
+                
+                // Update trip progress in footer
+                updateTripProgress(step);
+            }, 400); // Wait for animation out
+        }
+    }
+
+    function updateTripProgress(step) {
+        const eta = document.getElementById('eta');
+        const remainingTime = document.getElementById('remaining-time');
+        const remainingDist = document.getElementById('remaining-dist');
+        
+        if (eta) {
+            const now = new Date();
+            const arrivalTime = new Date(now.getTime() + step.remainingTime * 60000);
+            eta.textContent = arrivalTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        if (remainingTime) {
+            remainingTime.innerHTML = `${step.remainingTime}<span class="text-lg"> min</span>`;
+        }
+        
+        if (remainingDist) {
+            remainingDist.textContent = `${step.remainingKm.toFixed(1)} km`;
         }
     }
 
@@ -2254,6 +2360,28 @@ document.addEventListener('DOMContentLoaded', () => {
             const newLeft = Math.random() * (mapRect.width * 0.6) + (mapRect.width * 0.2);
             gpsDot.style.top = `${newTop}px`;
             gpsDot.style.left = `${newLeft}px`;
+        }
+        
+        // Simulate map background movement for navigation effect
+        animateMapBackground();
+    }
+
+    function animateMapBackground() {
+        const mapBg = document.getElementById('map');
+        if (mapBg && isNavigating) {
+            // Subtle background shift to simulate movement
+            const x = Math.random() * 4 - 2; // Random between -2 and 2
+            const y = Math.random() * 4 - 2; // Random between -2 and 2
+            
+            mapBg.style.transition = 'transform 1s ease-linear';
+            mapBg.style.transform = `scale(1.05) translate(${x}px, ${y}px)`;
+            
+            // Reset after animation
+            setTimeout(() => {
+                if (mapBg && isNavigating) {
+                    mapBg.style.transform = 'scale(1.05) translate(0px, 0px)';
+                }
+            }, 800);
         }
     }
 
@@ -2374,35 +2502,68 @@ document.addEventListener('DOMContentLoaded', () => {
     // Report functionality
     const reportMainButton = document.getElementById('report-main-button');
     const reportOptions = document.getElementById('report-options');
+    const reportContainer = document.getElementById('report-container');
     
     if (reportMainButton && reportOptions) {
-        let reportMenuOpen = false;
-        
-        reportMainButton.addEventListener('click', () => {
-            reportMenuOpen = !reportMenuOpen;
-            if (reportMenuOpen) {
-                reportOptions.style.display = 'flex';
-                reportMainButton.style.transform = 'rotate(45deg)';
-            } else {
-                reportOptions.style.display = 'none';
-                reportMainButton.style.transform = 'rotate(0deg)';
-            }
+        reportMainButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            reportContainer.classList.toggle('active');
+            
+            // Rotate the plus icon
+            const isActive = reportContainer.classList.contains('active');
+            reportMainButton.style.transform = isActive ? 'rotate(45deg) scale(1.1)' : 'rotate(0deg) scale(1)';
         });
 
         // Report option buttons
         document.querySelectorAll('.report-option').forEach(button => {
-            button.addEventListener('click', () => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const reportType = button.dataset.reportType;
                 showToast(`${reportType} reported!`);
                 
                 // Close report menu
-                reportOptions.style.display = 'none';
-                reportMainButton.style.transform = 'rotate(0deg)';
-                reportMenuOpen = false;
+                reportContainer.classList.remove('active');
+                reportMainButton.style.transform = 'rotate(0deg) scale(1)';
             });
         });
     }
 
+    // Close report menu when clicking elsewhere
+    document.getElementById('map-container')?.addEventListener('click', () => {
+        if(reportContainer?.classList.contains('active')) {
+            reportContainer.classList.remove('active');
+            if (reportMainButton) {
+                reportMainButton.style.transform = 'rotate(0deg) scale(1)';
+            }
+        }
+    });
+
+    // Sound toggle functionality
+    const soundToggleButton = document.getElementById('sound-toggle-button');
+    if (soundToggleButton) {
+        soundToggleButton.addEventListener('click', () => {
+            voiceNavigationEnabled = !voiceNavigationEnabled;
+            
+            // Update button appearance
+            if (voiceNavigationEnabled) {
+                soundToggleButton.innerHTML = `
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+                    </svg>
+                `;
+                soundToggleButton.classList.remove('opacity-50');
+                showToast('Voice navigation enabled');
+            } else {
+                soundToggleButton.innerHTML = `
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+                    </svg>
+                `;
+                soundToggleButton.classList.add('opacity-50');
+                showToast('Voice navigation disabled');
+            }
+        });
+    }
     // Layers menu
     const layersMenuButton = document.getElementById('layers-menu-button');
     if (layersMenuButton && layersMenu) {

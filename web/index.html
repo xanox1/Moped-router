@@ -188,10 +188,16 @@
         </header>
         
         <!-- Navigation Header (hidden by default) -->
-        <div id="navigation-header" class="absolute top-0 left-0 right-0 p-4 z-20 bg-blue-600 shadow-lg text-white transform -translate-y-full ui-card">
-            <div class="max-w-md mx-auto text-center">
-                <p class="text-lg font-semibold">In 200m, turn right</p>
-                <p class="text-2xl font-bold">Main Street</p>
+        <div id="navigation-header" class="absolute top-0 left-0 right-0 p-4 z-20 transform -translate-y-full ui-card">
+            <div class="max-w-md mx-auto w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl text-gray-900 flex items-center p-4">
+                <div id="turn-icon-container" class="pr-4 text-blue-500">
+                    <!-- Turn icon will be injected here -->
+                    <svg class="w-12 h-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12.75 15l3-3m0 0l-3-3m3 3h-7.5a6 6 0 00-6 6v1.5" /></svg>
+                </div>
+                <div>
+                    <p id="turn-distance" class="text-xl font-bold">200 m</p>
+                    <p id="turn-street" class="text-2xl font-extrabold">Turn right onto Main Street</p>
+                </div>
             </div>
         </div>
 
@@ -215,6 +221,10 @@
             </div>
              <button id="layers-menu-button" class="bg-white/90 backdrop-blur-sm text-gray-800 w-12 h-12 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-200 transition">
                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path></svg>
+            </button>
+            <button id="sound-toggle-button" class="bg-white/90 backdrop-blur-sm text-gray-800 w-12 h-12 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-200 transition">
+                <!-- Sound Icon -->
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" /></svg>
             </button>
         </div>
 
@@ -241,16 +251,18 @@
 
         <!-- Navigation Info Footer (hidden by default) -->
         <div id="navigation-footer" class="absolute bottom-0 left-0 right-0 p-4 z-20 ui-card hidden-card">
-            <div class="max-w-md mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-4 text-gray-800 flex justify-between items-center">
-                 <div>
-                    <p class="text-sm text-gray-500">ETA</p>
-                    <p id="eta" class="font-bold text-lg">11:19 AM</p>
+            <div class="max-w-md mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl text-gray-900 p-4">
+                <div class="flex justify-between items-center">
+                    <div class="text-center">
+                        <p class="text-sm text-gray-500 font-medium">ETA</p>
+                        <p id="eta" class="text-2xl font-bold">11:19 AM</p>
+                    </div>
+                    <div class="text-center">
+                        <p id="remaining-time" class="text-3xl font-bold">14<span class="text-lg"> min</span></p>
+                        <p id="remaining-dist" class="text-sm text-gray-500">4.8 km</p>
+                    </div>
+                    <button id="end-nav-button" class="bg-red-500 text-white font-bold py-3 px-5 rounded-xl hover:bg-red-600 transition">End</button>
                 </div>
-                <div>
-                    <p id="nav-time" class="font-bold text-lg">14 min</p>
-                    <p id="nav-dist" class="text-sm text-gray-500">4.8 km</p>
-                </div>
-                <button id="end-nav-button" class="bg-red-500 text-white font-semibold py-3 px-5 rounded-lg hover:bg-red-600 transition">End</button>
             </div>
         </div>
 

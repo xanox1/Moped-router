@@ -862,3 +862,95 @@ describe('GPS Functionality', () => {
     expect(htmlContent).toContain('animate-pulse');
   });
 });
+
+describe('Enhanced Navigation Mechanics', () => {
+  test('should have enhanced navigation directions with detailed data', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('mockDirections');
+    expect(scriptContent).toContain('distance:');
+    expect(scriptContent).toContain('icon:');
+    expect(scriptContent).toContain('duration:');
+    expect(scriptContent).toContain('remainingKm:');
+    expect(scriptContent).toContain('remainingTime:');
+  });
+
+  test('should have turn icons for navigation', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('turnIcons');
+    expect(scriptContent).toContain('right:');
+    expect(scriptContent).toContain('left:');
+    expect(scriptContent).toContain('straight:');
+    expect(scriptContent).toContain('finish:');
+  });
+
+  test('should have enhanced navigation header with turn icons', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('id="turn-icon-container"');
+    expect(htmlContent).toContain('id="turn-distance"');
+    expect(htmlContent).toContain('id="turn-street"');
+  });
+
+  test('should have sound/voice toggle functionality', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('voiceNavigationEnabled');
+    expect(scriptContent).toContain('sound-toggle-button');
+    expect(scriptContent).toContain('Voice navigation enabled');
+    expect(scriptContent).toContain('Voice navigation disabled');
+  });
+
+  test('should have sound toggle button in HTML', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('id="sound-toggle-button"');
+    expect(htmlContent).toContain('Sound Icon');
+  });
+
+  test('should have enhanced trip progress tracking', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('updateTripProgress');
+    expect(scriptContent).toContain('remaining-time');
+    expect(scriptContent).toContain('remaining-dist');
+    expect(scriptContent).toContain('toLocaleTimeString');
+  });
+
+  test('should have enhanced report functionality', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('report-container');
+    expect(scriptContent).toContain('classList.toggle(\'active\')');
+    expect(scriptContent).toContain('stopPropagation');
+  });
+
+  test('should have report button animations in CSS', () => {
+    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
+    expect(styleContent).toContain('.report-option');
+    expect(styleContent).toContain('.report-container.active .report-option');
+    expect(styleContent).toContain('transform: scale');
+    expect(styleContent).toContain('pointer-events: none');
+  });
+
+  test('should have enhanced UI card animations', () => {
+    const styleContent = require('fs').readFileSync('./web/style.css', 'utf8');
+    expect(styleContent).toContain('cubic-bezier(0.25, 0.8, 0.25, 1)');
+    expect(styleContent).toContain('opacity 0.4s ease');
+  });
+
+  test('should have navigation completion feedback', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('You have arrived at your destination!');
+    expect(scriptContent).toContain('Navigation ended');
+    expect(scriptContent).toContain('Navigation started');
+  });
+
+  test('should have map background animation during navigation', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('animateMapBackground');
+    expect(scriptContent).toContain('isNavigating');
+    expect(scriptContent).toContain('scale(1.05)');
+  });
+
+  test('should have enhanced navigation footer with detailed progress', () => {
+    const htmlContent = require('fs').readFileSync('./web/index.html', 'utf8');
+    expect(htmlContent).toContain('id="remaining-time"');
+    expect(htmlContent).toContain('id="remaining-dist"');
+    expect(htmlContent).toContain('text-3xl font-bold');
+  });
+});

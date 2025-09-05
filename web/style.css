@@ -80,7 +80,26 @@ body, html {
 
 /* UI Card animations */
 .ui-card {
-    transition: transform 0.3s ease-in-out;
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease;
+}
+
+/* Report button transitions */
+.report-option {
+    transition: all 0.2s ease-out;
+    transform: scale(0.5) translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.report-container.active .report-option {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Toast Notification */
+#toast {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
 .hidden-card {
