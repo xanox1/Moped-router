@@ -406,9 +406,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error fetching route:', error);
             
-            // Demo mode: If API fails, show mock route summary for testing
-            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                console.log('API unavailable - showing demo route summary');
+            // Only show demo route summary if demo mode is enabled
+            if (demoMode && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
+                console.log('API unavailable - showing demo route summary (demo mode enabled)');
                 showDemoRouteSummary(startPoint, endPoint);
                 return; // Exit early, demo function will handle cleanup
             } else {
@@ -2064,6 +2064,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let navigationInterval = null;
     let currentStep = 0;
     let voiceNavigationEnabled = true;
+    let demoMode = localStorage.getItem('demoMode') === 'true' || false;
     
     // Mock navigation directions with enhanced data
     const mockDirections = [
@@ -2144,6 +2145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             title: 'Settings',
             html: `
                 <div class="space-y-4">
+                    <div class="flex justify-between items-center"><label for="demo-mode" class="font-medium">Demo Mode</label><div id="demo-mode-toggle" class="w-12 h-6 flex items-center bg-gray-300 rounded-full p-1 cursor-pointer" onclick="toggleDemoMode(this)"><div class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"></div></div></div>
                     <div class="flex justify-between items-center"><label for="police-reports" class="font-medium">Show Police Reports</label><div class="w-12 h-6 flex items-center bg-blue-500 rounded-full p-1 cursor-pointer" onclick="this.classList.toggle('bg-gray-300'); this.classList.toggle('bg-blue-500'); this.firstElementChild.classList.toggle('translate-x-6')"><div class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out translate-x-6"></div></div></div>
                     <div class="flex justify-between items-center"><label for="voice" class="font-medium">Voice Navigation</label><div class="w-12 h-6 flex items-center bg-blue-500 rounded-full p-1 cursor-pointer" onclick="this.classList.toggle('bg-gray-300'); this.classList.toggle('bg-blue-500'); this.firstElementChild.classList.toggle('translate-x-6')"><div class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out translate-x-6"></div></div></div>
                     <div class="flex justify-between items-center"><label for="avoid-tolls" class="font-medium">Avoid Tolls</label><div class="w-12 h-6 flex items-center bg-gray-300 rounded-full p-1 cursor-pointer" onclick="this.classList.toggle('bg-gray-300'); this.classList.toggle('bg-blue-500'); this.firstElementChild.classList.toggle('translate-x-6')"><div class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"></div></div></div>
@@ -2209,6 +2211,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         }
+        
+        // Initialize demo mode toggle state
+        if (type === 'settings') {
+            setTimeout(() => {
+                const demoToggle = document.getElementById('demo-mode-toggle');
+                if (demoToggle) {
+                    if (demoMode) {
+                        demoToggle.classList.remove('bg-gray-300');
+                        demoToggle.classList.add('bg-blue-500');
+                        demoToggle.firstElementChild.classList.add('translate-x-6');
+                    } else {
+                        demoToggle.classList.remove('bg-blue-500');
+                        demoToggle.classList.add('bg-gray-300');
+                        demoToggle.firstElementChild.classList.remove('translate-x-6');
+                    }
+                }
+            }, 100);
+        }
     }
     
     function closeModal() {
@@ -2229,6 +2249,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 3000);
         }
     }
+
+    // Demo mode toggle function
+    window.toggleDemoMode = function(toggle) {
+        demoMode = !demoMode;
+        localStorage.setItem('demoMode', demoMode.toString());
+        
+        // Update toggle UI
+        if (demoMode) {
+            toggle.classList.remove('bg-gray-300');
+            toggle.classList.add('bg-blue-500');
+            toggle.firstElementChild.classList.add('translate-x-6');
+            showToast('Demo mode enabled');
+        } else {
+            toggle.classList.remove('bg-blue-500');
+            toggle.classList.add('bg-gray-300');
+            toggle.firstElementChild.classList.remove('translate-x-6');
+            showToast('Demo mode disabled');
+        }
+    };
 
     function startNavigation() {
         if (searchHeader) searchHeader.classList.add('-translate-y-full');
@@ -2257,8 +2296,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 endNavigation();
             } else {
                 updateNavHeader();
-                // Only use mock GPS movement if real GPS is not available
-                if (!gpsEnabled) {
+                // Only use mock GPS movement if demo mode is enabled AND real GPS is not available
+                if (demoMode && !gpsEnabled) {
                     moveGpsDot();
                 }
                 

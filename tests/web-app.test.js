@@ -827,7 +827,7 @@ describe('GPS Functionality', () => {
     expect(scriptContent).toContain('startWatchingPosition');
     expect(scriptContent).toContain('stopWatchingPosition');
     expect(scriptContent).toContain('updateGpsPosition');
-    expect(scriptContent).toContain('if (!gpsEnabled)');
+    expect(scriptContent).toContain('if (demoMode && !gpsEnabled)');
   });
 
   test('should have GPS status notifications', () => {
