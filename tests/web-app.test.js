@@ -827,7 +827,7 @@ describe('GPS Functionality', () => {
     expect(scriptContent).toContain('startWatchingPosition');
     expect(scriptContent).toContain('stopWatchingPosition');
     expect(scriptContent).toContain('updateGpsPosition');
-    expect(scriptContent).toContain('if (!gpsEnabled)');
+    expect(scriptContent).toContain('if (demoMode && !gpsEnabled)');
   });
 
   test('should have GPS status notifications', () => {
@@ -952,5 +952,59 @@ describe('Enhanced Navigation Mechanics', () => {
     expect(htmlContent).toContain('id="remaining-time"');
     expect(htmlContent).toContain('id="remaining-dist"');
     expect(htmlContent).toContain('text-3xl font-bold');
+  });
+});
+
+describe('Demo Mode Functionality', () => {
+  test('should have demo mode state variable', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('demoMode');
+    expect(scriptContent).toContain('localStorage.getItem(\'demoMode\')');
+  });
+
+  test('should have demo mode toggle function', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('toggleDemoMode');
+    expect(scriptContent).toContain('Demo mode enabled');
+    expect(scriptContent).toContain('Demo mode disabled');
+  });
+
+  test('should check demo mode before showing mock data', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('if (demoMode &&');
+    expect(scriptContent).toContain('demo mode enabled');
+  });
+
+  test('should have demo mode toggle in settings JavaScript', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('Demo Mode');
+    expect(scriptContent).toContain('demo-mode-toggle');
+  });
+});
+
+describe('Real Navigation Data', () => {
+  test('should request turn-by-turn instructions from API', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('instructions');
+    expect(scriptContent).toContain('true');
+  });
+
+  test('should have real directions parsing functions', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('parseRealDirections');
+    expect(scriptContent).toContain('extractStreetName');
+    expect(scriptContent).toContain('getIconFromSign');
+    expect(scriptContent).toContain('formatDistance');
+  });
+
+  test('should have real directions state variable', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('realDirections');
+  });
+
+  test('should choose between real and mock directions', () => {
+    const scriptContent = require('fs').readFileSync('./web/script.js', 'utf8');
+    expect(scriptContent).toContain('getDirectionsToUse');
+    expect(scriptContent).toContain('!demoMode && realDirections.length > 0');
   });
 });
